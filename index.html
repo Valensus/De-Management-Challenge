@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b2b35" />
+  <title>De Management Challenge — Managementsimulatie</title>
+  <style>
+    :root{
+      --ink:#12282e;--muted:#667a80;--paper:#f4f2ec;--card:rgba(255,255,255,.94);
+      --navy:#0b2b35;--teal:#087f72;--teal2:#0f9f8f;--lime:#c7df52;--amber:#f3b63f;
+      --red:#d9534f;--blue:#4276a9;--line:rgba(18,40,46,.12);--shadow:0 24px 70px rgba(10,42,51,.14);
+      --radius:26px;
+    }
+    *{box-sizing:border-box} html{min-height:100%;background:var(--paper)}
+    body{min-height:100vh;margin:0;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at 8% 10%,rgba(199,223,82,.25),transparent 25rem),radial-gradient(circle at 94% 86%,rgba(15,159,143,.15),transparent 28rem),var(--paper);overflow-x:hidden}
+    button{font:inherit}button:focus-visible{outline:4px solid rgba(15,159,143,.25);outline-offset:3px}
+    .app{width:min(1420px,calc(100% - 30px));margin:0 auto;min-height:100vh;padding:20px 0 34px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}.brand{display:flex;align-items:center;gap:12px;font-weight:850;letter-spacing:-.03em}.brand-mark{width:42px;height:42px;border-radius:14px;background:var(--navy);color:white;display:grid;place-items:center;box-shadow:0 10px 24px rgba(11,43,53,.2)}.brand-mark svg{width:24px;height:24px}.top-actions{display:flex;gap:8px}.icon-btn{border:1px solid var(--line);background:rgba(255,255,255,.7);color:var(--ink);width:44px;height:44px;border-radius:14px;cursor:pointer;display:grid;place-items:center;transition:.18s}.icon-btn:hover{transform:translateY(-2px);background:white}
+    .screen{display:none;animation:enter .35s ease both}.screen.active{display:block}@keyframes enter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+    .hero{min-height:calc(100vh - 105px);display:grid;grid-template-columns:1.02fr .98fr;align-items:center;gap:48px;padding:30px 8px 65px}.eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:850;text-transform:uppercase;letter-spacing:.13em;color:var(--teal)}.eyebrow:before{content:"";width:24px;height:3px;border-radius:99px;background:var(--lime)}h1{margin:16px 0 18px;font-size:clamp(52px,7vw,88px);line-height:.93;letter-spacing:-.072em;max-width:800px}h1 span{color:var(--teal)}.lead{font-size:clamp(18px,2vw,22px);line-height:1.55;color:var(--muted);max-width:700px;margin:0}.hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin:27px 0 32px}.pill{padding:9px 13px;background:rgba(255,255,255,.75);border:1px solid var(--line);border-radius:999px;font-size:14px;font-weight:750}.primary{border:0;border-radius:17px;padding:17px 23px;background:var(--navy);color:white;font-weight:850;cursor:pointer;display:inline-flex;align-items:center;gap:14px;box-shadow:0 16px 36px rgba(11,43,53,.23);transition:.2s}.primary:hover{transform:translateY(-2px)}.primary .arrow{width:30px;height:30px;border-radius:10px;background:var(--lime);color:var(--navy);display:grid;place-items:center;font-size:19px}.score-preview{background:var(--navy);color:white;border-radius:38px;padding:30px;box-shadow:var(--shadow);position:relative;overflow:hidden;min-height:515px;display:flex;flex-direction:column;justify-content:space-between}.score-preview:after{content:"";position:absolute;width:360px;height:360px;border-radius:50%;border:80px solid rgba(199,223,82,.11);right:-130px;bottom:-145px}.preview-top,.preview-score,.preview-board{position:relative;z-index:1}.preview-top{display:flex;justify-content:space-between;align-items:center;color:rgba(255,255,255,.72);font-weight:700}.live-dot{width:9px;height:9px;border-radius:50%;background:var(--lime);display:inline-block;margin-right:7px;box-shadow:0 0 0 7px rgba(199,223,82,.12)}.preview-score small{display:block;color:rgba(255,255,255,.67);font-weight:750;margin-bottom:3px}.preview-score strong{font-size:clamp(46px,5.2vw,72px);line-height:.95;letter-spacing:-.065em}.preview-score strong em{font-size:.30em;font-style:normal;margin-left:5px;color:var(--lime)}.dual-preview{display:grid;grid-template-columns:1fr 1fr;gap:18px 24px;align-items:end}.preview-kpi{padding:14px 0}.preview-kpi+.preview-kpi{border-left:1px solid rgba(255,255,255,.14);padding-left:24px}.preview-target{grid-column:1/-1;margin-top:2px;color:rgba(255,255,255,.7);line-height:1.45}.preview-board{display:grid;gap:8px}.preview-row{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.07);font-size:14px}.preview-row.you{background:rgba(199,223,82,.16);border:1px solid rgba(199,223,82,.25)}.preview-row strong{color:var(--lime)}
+
+    .game-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px;align-items:start}.game-main{min-width:0}.hud{background:var(--navy);color:white;padding:18px 22px;border-radius:24px;display:grid;grid-template-columns:minmax(150px,.7fr) minmax(150px,.7fr) minmax(250px,1.35fr);align-items:center;gap:22px;margin-bottom:16px;box-shadow:0 14px 32px rgba(11,43,53,.16)}.hud-label{color:rgba(255,255,255,.65);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.11em}.hud-kpi{min-width:0}.hud-kpi+.hud-kpi{border-left:1px solid rgba(255,255,255,.13);padding-left:22px}.hud-score{display:flex;align-items:baseline;gap:6px;margin-top:3px}.hud-score strong{font-size:40px;letter-spacing:-.055em;line-height:1}.hud-score span{color:var(--lime);font-size:16px;font-weight:850}
+.score-info-btn{border:0;background:transparent;color:rgba(255,255,255,.68);font-size:13px;cursor:pointer;padding:0 2px;vertical-align:1px}.score-info-btn:hover{color:var(--lime)}
+.calendar-wrap{min-width:0}.calendar-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}.calendar-meta strong{font-size:12px}.calendar-meta span{font-size:10px;color:var(--lime);font-weight:850;text-transform:uppercase;letter-spacing:.08em}.calendar-weeks{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.cal-week{min-width:0}.cal-week-label{display:flex;justify-content:space-between;font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.45);font-weight:800;margin-bottom:4px}.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.cal-week:last-child .cal-days{grid-template-columns:repeat(9,1fr)}.cal-day{height:8px;border-radius:99px;background:rgba(255,255,255,.13);position:relative;transition:.2s}.cal-day.past{background:rgba(199,223,82,.45)}.cal-day.today{background:var(--lime);box-shadow:0 0 0 2px rgba(199,223,82,.17)}.cal-day.has-event:after{content:"";position:absolute;width:3px;height:3px;border-radius:50%;background:white;left:50%;top:50%;transform:translate(-50%,-50%)}
+.score-breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:-7px 0 18px}.score-breakdown>div{padding:11px 12px;border-radius:12px;background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.07)}.score-breakdown span{display:block;font-size:9px;color:rgba(255,255,255,.55);font-weight:850;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}.score-breakdown strong{font-size:17px;color:white}
+.perspective-box{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.perspective-box>.learning-kicker{grid-column:1/-1;margin:0 0 -2px;color:var(--lime)}.perspective-card{padding:15px 16px;border-radius:15px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.08)}.perspective-role{display:flex;align-items:center;gap:8px;margin-bottom:7px;color:var(--lime);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.perspective-avatar{width:25px;height:25px;border-radius:8px;display:grid;place-items:center;background:rgba(199,223,82,.14);font-size:11px}.perspective-card p{margin:0!important;color:rgba(255,255,255,.86)!important;font-size:13px!important;line-height:1.48!important;font-style:italic}
+.score-info-copy{display:grid;gap:9px;margin:14px 0}.score-info-row{padding:12px 13px;border-radius:12px;background:#f2f6f5}.score-info-row strong{display:block;color:var(--navy);font-size:13px;margin-bottom:2px}.score-info-row span{display:block;color:var(--muted);font-size:12px;line-height:1.42}
+.progress-meta{display:flex;justify-content:space-between;margin-bottom:7px;color:rgba(255,255,255,.72);font-size:12px;font-weight:700}.progress-track{height:8px;background:rgba(255,255,255,.13);border-radius:999px;overflow:hidden}.progress-fill{height:100%;width:0;background:var(--lime);border-radius:inherit;transition:width .4s ease}
+    .notice{display:none;margin-bottom:16px;padding:19px 20px;border-radius:20px;background:#fff7da;border:1px solid rgba(243,182,63,.35);box-shadow:0 8px 22px rgba(45,38,8,.06);animation:enter .3s ease}.notice.show{display:grid;grid-template-columns:38px 1fr auto;gap:12px;align-items:start}.notice-icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--amber);font-weight:900}.notice strong{display:block;margin-bottom:5px;font-size:13px;letter-spacing:.035em}.notice p{margin:0;color:#6f6340;line-height:1.45;font-size:14px}.notice-delta{font-size:12px;font-weight:850;color:#7c5e12;white-space:nowrap}
+    .case-card{background:var(--card);border:1px solid rgba(255,255,255,.8);border-radius:var(--radius);box-shadow:var(--shadow);padding:clamp(24px,3.4vw,40px);min-height:640px;position:relative;overflow:hidden}.case-card:before{content:"";position:absolute;inset:0 0 auto 0;height:6px;background:linear-gradient(90deg,var(--teal),var(--lime))}.case-kicker{display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--teal);font-weight:850;font-size:12px;text-transform:uppercase;letter-spacing:.11em}.case-number{background:rgba(8,127,114,.1);padding:8px 11px;border-radius:10px}.deadline{margin:22px 0 12px;padding:14px 16px;border-radius:16px;background:#eef3f1;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}.deadline.danger{background:#fff0ee}.deadline-icon{font-size:22px}.deadline-text small{display:block;color:var(--muted);font-weight:750;margin-bottom:2px}.deadline-text strong{font-size:16px}.deadline-bar{height:7px;background:rgba(18,40,46,.1);border-radius:99px;overflow:hidden}.deadline-fill{height:100%;background:var(--teal);border-radius:inherit;transition:width .35s}.deadline.danger .deadline-fill{background:var(--red)}.deadline-left{font-size:13px;font-weight:850;white-space:nowrap}
+.choice.time-locked,.info-btn.time-locked{opacity:.43;filter:grayscale(.15);cursor:not-allowed!important}.choice.time-locked .choice-cost,.info-btn.time-locked span{color:var(--red)!important;font-weight:900}.profile-row{font-size:13px!important;padding:10px 0!important}.profile-row strong{font-size:11px!important}.manager-profile-live .profile-note{font-size:12px!important}
+.time-note{margin:-2px 0 10px;font-size:12px;line-height:1.45;color:#708087;max-width:780px}
+.manager-profile-live .profile-note{font-size:11px;line-height:1.4;color:var(--muted);margin:0 0 10px}.profile-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:12px}.profile-row:first-of-type{border-top:0}.profile-row span{font-weight:760;color:var(--navy)}.profile-row strong{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#819096;font-weight:850}
+.effect-tags{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px!important;margin-top:20px!important}.effect-tag{display:flex;align-items:center;justify-content:center;text-align:center;min-height:80px;padding:17px 18px!important;border-radius:16px!important;border:1px solid rgba(255,255,255,.10);font-size:18px!important;font-weight:950!important;line-height:1.18;letter-spacing:-.015em}.effect-tag.positive{background:rgba(55,178,115,.24)!important;border-color:rgba(122,226,170,.38);color:#e5fff0}.effect-tag.negative{background:rgba(220,82,75,.24)!important;border-color:rgba(255,143,136,.36);color:#ffe7e4}.effect-tag.neutral{background:rgba(255,255,255,.11)!important;color:white}
+.learning-box{margin-top:20px;padding:18px;border-radius:17px;background:#f5fbf9;color:var(--navy);border:1px solid #dcece7}.learning-kicker{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);margin-bottom:12px}.learning-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.learning-item{padding:13px 14px;border-radius:13px;background:white;border:1px solid #e4eeeb}.learning-item small,.learning-question small{display:block;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#718187;margin-bottom:5px}.learning-item p,.learning-question p{margin:0!important;color:#314c54!important;font-size:13px!important;line-height:1.5!important}.learning-question{margin-top:12px;padding:13px 14px;border-radius:13px;background:#e9f5f1;border:1px solid #d4e9e2}
+.campaign-log{margin-top:20px;background:white;border:1px solid var(--line);border-radius:24px;padding:20px 22px;box-shadow:0 10px 28px rgba(11,43,53,.07)}.campaign-log-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:14px}.campaign-log-head h3{margin:4px 0 0;font-size:20px;letter-spacing:-.03em;color:var(--navy)}.log-hint{font-size:11px;color:var(--muted);font-weight:750}.campaign-history{display:grid;gap:10px}.history-empty{padding:16px;border-radius:13px;background:#f6f8f8;color:var(--muted);font-size:12px}.history-item{display:grid;grid-template-columns:70px 110px minmax(0,1fr) auto;gap:12px;align-items:start;padding:13px 14px;border-radius:15px;border:1px solid var(--line);background:#fbfcfc}.history-day{font-size:12px;font-weight:900;color:var(--teal)}.history-type{display:inline-flex;width:max-content;padding:4px 7px;border-radius:7px;background:#edf4f2;color:#526d73;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.07em}.history-main strong{display:block;font-size:13px;color:var(--navy);margin-bottom:3px}.history-main p{margin:0;font-size:12px;line-height:1.45;color:#60747a}.history-effects{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.history-effect{padding:5px 8px;border-radius:8px;font-size:10px;font-weight:900}.history-effect.positive{background:#e1f5e9;color:#27734d}.history-effect.negative{background:#fde7e5;color:#a7433e}.history-effect.neutral{background:#edf1f1;color:#65787d}.history-points.positive{color:#2f8a5a!important}
+.history-points{font-size:12px;font-weight:900;color:var(--teal);white-space:nowrap}.history-points.negative{color:#b4534d}
+
+.case-title{font-size:clamp(31px,3.6vw,48px);line-height:1.02;letter-spacing:-.05em;margin:22px 0 11px}.case-text{color:var(--muted);font-size:17px;line-height:1.58;max-width:850px;margin:0 0 20px}.signals{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}.signal{padding:7px 10px;background:#eef3f1;border-radius:9px;font-size:12px;font-weight:780;color:#486267}.revealed{display:grid;gap:8px;margin:0 0 18px}.reveal{padding:12px 14px;border-left:4px solid var(--teal);border-radius:10px;background:#f0f7f5;color:#416267;font-size:14px;line-height:1.45;animation:enter .25s ease}.info-title,.question{font-size:14px;font-weight:850;margin:0 0 10px}.info-title{color:var(--teal);text-transform:uppercase;letter-spacing:.07em}.info-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}.info-btn{border:1px solid var(--line);background:white;border-radius:12px;padding:10px 12px;cursor:pointer;font-size:13px;font-weight:760;color:var(--ink);transition:.16s}.info-btn:hover:not(:disabled){border-color:var(--teal);transform:translateY(-1px)}.info-btn:disabled{opacity:.45;cursor:default}.info-btn span{color:var(--muted);font-weight:700}.choices{display:grid;gap:10px}.choice{width:100%;border:1px solid var(--line);background:white;border-radius:16px;padding:14px 16px;cursor:pointer;text-align:left;display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:12px;transition:.16s;color:var(--ink)}.choice:hover:not(:disabled){border-color:rgba(8,127,114,.48);transform:translateX(3px);box-shadow:0 8px 20px rgba(8,127,114,.07)}.choice:disabled{cursor:default;opacity:.55}.choice.selected{opacity:1;border-color:var(--teal);background:rgba(8,127,114,.055);box-shadow:inset 0 0 0 1px var(--teal)}.choice-letter{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:#edf2f0;font-weight:900;color:var(--teal)}.choice.selected .choice-letter{background:var(--teal);color:white}.choice-text{font-weight:720;line-height:1.36}.choice-cost{font-size:11px;color:var(--muted);text-align:right;max-width:110px}.result{display:none;margin-top:22px;padding:clamp(22px,3vw,32px);border-radius:24px;background:var(--navy);color:white;animation:impactIn .42s ease;box-shadow:0 18px 50px rgba(11,43,53,.24)}.result.show{display:block}@keyframes impactIn{0%{opacity:0;transform:scale(.975) translateY(10px)}70%{transform:scale(1.006)}100%{opacity:1;transform:none}}.result-badge{display:inline-flex;align-items:center;gap:7px;color:var(--lime);font-size:12px;font-weight:900;letter-spacing:.11em;text-transform:uppercase}.result-impact{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:end;margin:16px 0 19px;padding:18px 20px;border-radius:18px;background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.08)}.result-impact small{display:block;color:rgba(255,255,255,.58);font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}.result-impact-main strong{font-size:clamp(42px,5vw,62px);line-height:.9;letter-spacing:-.06em;color:var(--lime)}.result-impact-main strong.negative{color:#ffb0a9}.result-impact-main span{margin-left:7px;color:rgba(255,255,255,.62);font-weight:800}.result-rank{text-align:right}.result-rank strong{font-size:clamp(24px,3vw,34px);letter-spacing:-.04em}.result h3{margin:4px 0 7px;font-size:clamp(24px,3vw,31px);letter-spacing:-.035em}.result p{margin:0;color:rgba(255,255,255,.78);line-height:1.55;font-size:15px}.effect-tags{display:flex;flex-wrap:wrap;gap:9px;margin-top:17px}.effect-tag{padding:9px 11px;border-radius:10px;background:rgba(255,255,255,.10);font-size:12px;font-weight:850}.result-actions{display:flex;justify-content:flex-end;margin-top:18px}.next-btn{border:0;background:var(--lime);color:var(--navy);border-radius:12px;padding:12px 17px;font-weight:900;cursor:pointer}
+    .sidebar{display:grid;gap:14px;position:sticky;top:14px}.side-card{background:rgba(255,255,255,.75);border:1px solid var(--line);border-radius:20px;padding:18px}.side-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:850;margin-bottom:7px}.leaderboard{background:var(--navy);color:white}.leaderboard .side-label{color:rgba(255,255,255,.58)}.board-caption{font-size:10px;color:var(--muted);font-weight:800;margin:-2px 0 8px}
+.board-row{display:grid;grid-template-columns:24px 1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.09);font-size:13px}.board-row:last-child{border-bottom:0}.board-row.you{color:var(--lime);font-weight:850}.rank{color:rgba(255,255,255,.46);font-weight:850}.board-row.you .rank{color:var(--lime)}.board-score{font-variant-numeric:tabular-nums;font-weight:850}.kpi{display:grid;grid-template-columns:1fr auto;gap:7px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}.kpi:last-child{border-bottom:0}.kpi span{color:var(--muted);font-size:13px}.kpi strong{font-size:13px}.mini-bar{grid-column:1/-1;height:5px;background:rgba(18,40,46,.09);border-radius:99px;overflow:hidden}.mini-bar i{display:block;height:100%;background:var(--teal);border-radius:inherit;transition:width .35s}.resources{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.resource{text-align:center;padding:10px 7px;border-radius:12px;background:#eef3f1}.resource strong{display:block;font-size:15px}.resource span{font-size:10px;color:var(--muted);font-weight:750}.inbox-list{display:grid;gap:7px;max-height:180px;overflow:auto}.inbox-item{padding:9px 10px;border-radius:11px;background:#f0f4f2;font-size:11px;line-height:1.35;color:#4f686d}.inbox-item strong{display:block;color:var(--ink);font-size:11px;margin-bottom:2px}.inbox-empty{color:var(--muted);font-size:12px}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(3,22,28,.68);display:none;place-items:center;padding:18px;z-index:50}.modal-backdrop.show{display:grid}.modal{width:min(650px,100%);background:white;border-radius:26px;padding:26px;box-shadow:0 30px 90px rgba(0,0,0,.28);animation:enter .3s ease}.consequence-impact{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0 12px}.consequence-impact .effect-tag{min-height:auto!important;justify-content:flex-start!important;text-align:left!important;padding:10px 12px!important;font-size:13px!important}.consequence-points{font-size:32px;font-weight:950;letter-spacing:-.04em;margin:12px 0 4px}.consequence-points.positive{color:#2f9b64}.consequence-points.negative{color:#c9534d}
+.modal-kicker{color:var(--teal);font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.1em}.modal h2{font-size:31px;letter-spacing:-.04em;margin:10px 0 8px}.modal p{color:var(--muted);line-height:1.52;margin:0 0 18px}.modal .choices{margin-top:12px}
+    .final-wrap{display:grid;grid-template-columns:.82fr 1.18fr;gap:22px;align-items:stretch}.final-score{background:var(--navy);color:white;border-radius:30px;padding:clamp(28px,4vw,48px);box-shadow:var(--shadow);min-height:600px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}.final-score:after{content:"";position:absolute;width:390px;height:390px;border-radius:50%;border:90px solid rgba(199,223,82,.1);bottom:-180px;right:-160px}.final-score>*{position:relative;z-index:1}.final-score h2{font-size:22px;margin:0}.big-points small{display:block;color:rgba(255,255,255,.62);font-weight:750;margin-bottom:6px}.big-points strong{display:block;font-size:clamp(72px,10vw,115px);line-height:.85;letter-spacing:-.075em}.big-points em{font-size:15px;color:var(--lime);font-style:normal;font-weight:850}.final-substats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}.final-substat{padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.08)}.final-substat span{display:block;color:rgba(255,255,255,.56);font-size:10px;text-transform:uppercase;letter-spacing:.08em}.final-substat strong{font-size:18px}.verdict{border-top:1px solid rgba(255,255,255,.13);padding-top:22px}.verdict-label{color:var(--lime);font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:850}.verdict p{margin:8px 0 0;font-size:20px;line-height:1.38;font-weight:700}.report{background:var(--card);border-radius:30px;padding:clamp(26px,3vw,40px);box-shadow:var(--shadow)}.report h2{margin:0 0 5px;font-size:34px;letter-spacing:-.045em}.report-sub{color:var(--muted);margin:0 0 22px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:23px}.metric{background:#eef3f1;border-radius:14px;padding:12px}.metric span{font-size:10px;color:var(--muted);font-weight:780}.metric strong{display:block;margin-top:4px;font-size:17px}.metric-bar{height:5px;background:rgba(18,40,46,.1);border-radius:99px;margin-top:8px;overflow:hidden}.metric-bar i{display:block;height:100%;width:0;background:var(--teal);border-radius:inherit;transition:width .8s ease .2s}.insights-title{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);font-weight:850;margin-bottom:8px}.insights{display:grid;gap:7px;max-height:315px;overflow:auto}.insight{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid var(--line)}.insight:last-child{border-bottom:0}.insight-icon{width:30px;height:30px;border-radius:9px;background:rgba(8,127,114,.1);color:var(--teal);display:grid;place-items:center;font-weight:900;font-size:12px}.insight strong{display:block;margin-bottom:1px;font-size:13px}.insight p{margin:0;color:var(--muted);line-height:1.35;font-size:12px}.restart{width:100%;justify-content:center;margin-top:18px}.footnote{text-align:center;margin-top:18px;color:var(--muted);font-size:11px}
+    @media(max-width:1050px){.game-layout{grid-template-columns:1fr}.sidebar{position:static;grid-template-columns:repeat(2,1fr)}.leaderboard{grid-row:span 2}.hero{grid-template-columns:1fr}.score-preview{min-height:430px}.hud{grid-template-columns:auto 1fr auto}}
+    @media(max-width:720px){.learning-grid,.perspective-box{grid-template-columns:1fr}.score-breakdown{grid-template-columns:1fr}.campaign-log-head{align-items:flex-start;flex-direction:column}.history-item{grid-template-columns:58px 1fr}.history-type{grid-column:2}.history-main{grid-column:1/-1}.history-points{grid-column:1/-1}.result-impact{grid-template-columns:1fr}.result-rank{text-align:left}.result-impact-main strong{font-size:46px}.app{width:min(100% - 18px,1420px);padding-top:10px}.brand-name{display:none}.hero{padding:12px 2px 25px;gap:28px}h1{font-size:49px}.score-preview{min-height:390px;padding:23px}.hud{grid-template-columns:1fr 1fr;padding:15px;gap:14px}.hud .progress-wrap{grid-column:1/-1}.hud-kpi+.hud-kpi{padding-left:14px}.hud-score strong{font-size:34px}.case-card{padding:22px 16px;min-height:0}.case-title{font-size:34px}.choice{grid-template-columns:32px 1fr}.choice-cost{grid-column:2;text-align:left}.deadline{grid-template-columns:auto 1fr}.deadline-left{grid-column:2}.sidebar{grid-template-columns:1fr}.leaderboard{grid-row:auto}.metrics{grid-template-columns:repeat(2,1fr)}.final-wrap{grid-template-columns:1fr}.modal{padding:22px}.notice.show{grid-template-columns:34px 1fr}.notice-delta{grid-column:2}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+  </style>
+</head>
+<body>
+<main class="app">
+  <header class="topbar">
+    <div class="brand"><div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 17V9m7 8V5m7 12v-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M3.5 20h17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></div><span class="brand-name">De Management Challenge</span></div>
+    <div class="top-actions"><button class="icon-btn" id="fullscreenBtn" title="Volledig scherm" aria-label="Volledig scherm">⛶</button></div>
+  </header>
+
+  <section class="screen active" id="startScreen">
+    <div class="hero">
+      <div>
+        <div class="eyebrow">Managementsimulatie · leiderschap, inzetbaarheid & mobiliteit</div>
+        <h1>Eén maand.<br><span>Jij bent aan zet.</span></h1>
+        <p class="lead">Je leidt een team van 25 medewerkers gedurende één maand. Verzuim, mobiliteit, werkdruk, ontwikkeling en onverwachte gebeurtenissen lopen door elkaar. In deze demo speel je de eerste 12 dagen; keuzes kunnen later in de maand nog doorwerken.</p>
+        <div class="hero-meta"><span class="pill">🗓 Campagne van 30 dagen</span><span class="pill">▶ Demo: dag 1–12</span><span class="pill">⏳ Tijd is je schaarse resource</span><span class="pill">↻ Keuzes werken door</span></div>
+        <button class="primary" id="startBtn">Start de campagne <span class="arrow">→</span></button>
+      </div>
+      <div class="score-preview">
+        <div class="preview-top"><span><i class="live-dot"></i>Managersklassement</span><span>Voorbeeld later in de campagne</span></div>
+        <div class="preview-score dual-preview">
+          <div class="preview-kpi"><small>Managementscore</small><strong>0<em>pt</em></strong></div>
+          <div class="preview-kpi"><small>Verzuim</small><strong>6,2<em>%</em></strong></div>
+          <div class="preview-target">Je begint op 0. Punten verdien je met de kwaliteit van je afweging, het directe effect en je timing. Latere gevolgen kunnen de score opnieuw veranderen.</div>
+        </div>
+        <div class="preview-board">
+          <div class="preview-row"><span>1</span><span>Sophie</span><strong>1.520</strong></div>
+          <div class="preview-row"><span>2</span><span>Ahmed</span><strong>1.430</strong></div>
+          <div class="preview-row"><span>3</span><span>Nina</span><strong>1.350</strong></div>
+          <div class="preview-row you"><span>?</span><span>Jij</span><strong>jouw route</strong></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="gameScreen">
+    <div class="game-layout">
+      <div class="game-main">
+        <div class="hud">
+          <div class="hud-kpi">
+            <div class="hud-label">Managementscore <button class="score-info-btn" id="scoreInfoBtn" title="Hoe wordt mijn score bepaald?">ⓘ</button></div>
+            <div class="hud-score"><strong id="pointsValue">0</strong><span>pt</span></div>
+          </div>
+          <div class="hud-kpi"><div class="hud-label">Huidig verzuim</div><div class="hud-score"><strong id="scoreValue">6,2</strong><span>%</span></div></div>
+          <div class="calendar-wrap">
+            <div class="calendar-meta"><strong id="progressText">Week 1 · dag 1 van 30</strong><span id="calendarToday">Vandaag</span></div>
+            <div class="calendar-weeks" id="calendarWeeks"></div>
+          </div>
+        </div>
+
+        <div class="notice" id="notice"><div class="notice-icon">↻</div><div><strong id="noticeTitle"></strong><p id="noticeText"></p></div><div class="notice-delta" id="noticeDelta"></div></div>
+
+        <article class="case-card" id="caseCard">
+          <div class="case-kicker"><span id="caseTheme"></span><span class="case-number" id="caseNumber"></span></div>
+          <div class="deadline" id="deadlineBox"><div class="deadline-icon">⏱</div><div class="deadline-text"><small>Handelingsvenster</small><strong id="deadlineText"></strong><div class="deadline-bar"><div class="deadline-fill" id="deadlineFill"></div></div></div><div class="deadline-left" id="deadlineLeft"></div></div>
+          <h2 class="case-title" id="caseTitle"></h2>
+          <p class="case-text" id="caseText"></p>
+          <div class="signals" id="caseSignals"></div>
+          <div class="revealed" id="revealed"></div>
+          <div id="infoBlock"><p class="info-title">Meer informatie verzamelen</p><p class="time-note">De kalender loopt mee. Extra informatie kost een halve of hele dag en kan daardoor opties hieronder onhaalbaar maken.</p><div class="info-actions" id="infoActions"></div></div>
+          <p class="question" id="question">Wat doe je?</p>
+          <div class="choices" id="choices"></div>
+          <div class="result" id="resultBox" aria-live="polite">
+            <div class="result-badge" id="resultBadge">● Gevolg van je keuze</div>
+            <div class="result-impact">
+              <div class="result-impact-main"><small>Managementscore</small><strong id="resultPointsDelta">+0</strong><span>punten</span></div>
+              <div class="result-rank"><small>Managersklassement</small><strong id="resultRankMove">#–</strong></div>
+            </div>
+            <div class="score-breakdown" id="scoreBreakdown">
+              <div><span>Afweging</span><strong id="scoreJudgement">+0</strong></div>
+              <div><span>Direct effect</span><strong id="scoreEffect">+0</strong></div>
+              <div><span>Tijdigheid</span><strong id="scoreTiming">+0</strong></div>
+            </div>
+            <h3 id="resultTitle"></h3>
+            <p id="resultText"></p>
+            <div class="effect-tags" id="effectTags"></div>
+            <div class="perspective-box" id="perspectiveBox"></div>
+            <div class="learning-box" id="learningBox">
+              <div class="learning-kicker">Trainingreflectie</div>
+              <div class="learning-grid">
+                <div class="learning-item"><small>Managementinzicht</small><p id="learningInsight"></p></div>
+                <div class="learning-item"><small>Valkuil / trade-off</small><p id="learningRisk"></p></div>
+              </div>
+              <div class="learning-question"><small>Reflectievraag</small><p id="learningQuestion"></p></div>
+            </div>
+            <div class="result-actions"><button class="next-btn" id="nextBtn">Verder →</button></div>
+          </div>
+        </article>
+
+      </div>
+
+      <aside class="sidebar">
+        <div class="side-card leaderboard"><div class="side-label">Managersklassement</div><div id="leaderboard"></div></div>
+        <div class="side-card"><div class="side-label">Teamindicatoren</div>
+          <div class="kpi"><span>Vertrouwen</span><strong id="trustLabel">Goed</strong><div class="mini-bar"><i id="trustBar"></i></div></div>
+          <div class="kpi"><span>Duurzame inzetbaarheid</span><strong id="sustainLabel">Aandacht</strong><div class="mini-bar"><i id="sustainBar"></i></div></div>
+          <div class="kpi"><span>Werkdruk</span><strong id="workloadLabel">Hoog</strong><div class="mini-bar"><i id="workloadBar"></i></div></div>
+          <div class="kpi"><span>Productiviteit</span><strong id="productivityLabel">84%</strong><div class="mini-bar"><i id="productivityBar"></i></div></div>
+        </div>
+        <div class="side-card manager-profile-live"><div class="side-label">Jouw managementprofiel</div><p class="profile-note">Wordt opgebouwd uit je keuzes en pas bij het checkpoint beoordeeld.</p><div class="profile-row"><span>Preventief handelen</span><strong>in ontwikkeling</strong></div><div class="profile-row"><span>Zorgvuldigheid</span><strong>in ontwikkeling</strong></div><div class="profile-row"><span>Mensgericht leiderschap</span><strong>in ontwikkeling</strong></div><div class="profile-row"><span>Resultaatsturing</span><strong>in ontwikkeling</strong></div></div>
+
+      </aside>
+    </div>
+    <section class="campaign-log"><div class="campaign-log-head"><div><span class="side-label">Campagnelogboek</span><h3>Jouw keuzes en gevolgen door de maand heen</h3></div><span class="log-hint">Chronologisch · keuzes · gevolgen · events</span></div><div class="campaign-history" id="campaignHistory"><div class="history-empty">Je campagnegeschiedenis verschijnt hier zodra je keuzes maakt.</div></div></section>
+    <p class="footnote game-disclaimer">Didactische simulatie. Geen individueel HR-, medisch of juridisch advies; echte casuïstiek vraagt professionele beoordeling en context.</p>
+  </section>
+
+  <section class="screen" id="finalScreen">
+    <div class="final-wrap">
+      <div class="final-score">
+        <h2>Demo afgerond</h2>
+        <div class="big-points"><small>Tussenstand na dag 12</small><strong id="finalPoints">0</strong><em> punten</em><div class="final-substats"><div class="final-substat"><span>Verzuim</span><strong id="finalAbsence">0,0%</strong></div><div class="final-substat"><span>Positie</span><strong id="finalRank">#–</strong></div></div></div>
+        <div class="verdict"><div class="verdict-label">Eerste indruk van je aanpak</div><p id="verdictText"></p></div>
+      </div>
+      <div class="report">
+        <h2>Jouw managementprofiel</h2><p class="report-sub">Deze kwaliteiten worden op de achtergrond opgebouwd uit je keuzes. Tijdens de campagne zie je vooral wat er met je team gebeurt.</p>
+        <div class="metrics">
+          <div class="metric"><span>Preventief handelen</span><strong id="metricPreventiveLabel">—</strong><div class="metric-bar"><i id="metricPreventive"></i></div></div>
+          <div class="metric"><span>Zorgvuldigheid</span><strong id="metricCareLabel">—</strong><div class="metric-bar"><i id="metricCare"></i></div></div>
+          <div class="metric"><span>Mensgericht leiderschap</span><strong id="metricHumanLabel">—</strong><div class="metric-bar"><i id="metricHuman"></i></div></div>
+          <div class="metric"><span>Resultaatsturing</span><strong id="metricResultLabel">—</strong><div class="metric-bar"><i id="metricResult"></i></div></div>
+        </div>
+        <div class="insights-title">Belangrijkste beslismomenten</div><div class="insights" id="insights"></div>
+        <button class="primary restart" id="restartBtn">Speel demo opnieuw <span class="arrow">↻</span></button>
+      </div>
+    </div>
+    <p class="footnote">Je speelt hier de eerste 12 dagen van een campagne van 30 dagen. Het managersklassement gebruikt fictieve deelnemers; een echt gedeeld klassement vraagt later een database/backend.</p>
+  </section>
+</main>
+
+<div class="modal-backdrop" id="modalBackdrop"><div class="modal"><div class="modal-kicker" id="modalKicker">Campagne-event · onverwachte gebeurtenis</div><h2 id="modalTitle"></h2><p id="modalText"></p><div class="choices" id="modalChoices"></div></div></div>
+
+<script>
+const scenarios = [
+  {
+    theme:'Frequent kort verzuim', title:'Lisa meldt zich voor de vijfde keer ziek',
+    steps:[
+      {
+        title:'Een patroon zonder duidelijke oorzaak', deadline:3, reflect:'Wanneer wordt terugkerend individueel verzuim ook een team- en organisatievraagstuk?',
+        text:'Lisa levert goed werk, maar heeft zich in vier maanden vijf keer één of twee dagen ziekgemeld. Haar collega’s vangen het werk telkens op. Vandaag meldt ze zich opnieuw ziek. Je wilt het patroon niet negeren, maar ook niet te snel conclusies trekken.',
+        signals:['5 korte ziekmeldingen','Goede prestaties','Team vangt werk op'],
+        info:[
+          {label:'Bekijk verzuimpatroon',time:.5,hr:0,reveal:'De meldingen vallen vaker na piekbelasting en rond drukke privéweken. Er is nog geen patroonbespreking geweest.'},
+          {label:'Vraag HR om sparring',time:1,hr:2,reveal:'HR adviseert het patroon bespreekbaar te maken zonder medische aannames, maar waarschuwt ook dat maatwerk gevolgen kan hebben voor de rest van het team.'},
+          {label:'Check teambelasting',time:.5,hr:0,reveal:'Twee collega’s hebben veel werk overgenomen. Zij noemen vooral de onvoorspelbaarheid als probleem, niet Lisa zelf.'}
+        ],
+        choices:[
+          {label:'Na haar herstel bespreek ik het patroon met Lisa en maak ik voor zes weken tijdelijke werk- en overdrachtsafspraken.',time:1,points:300,e:{absence:-.15,preventive:9,trust:8,sustain:7,care:8,workload:-2,productivity:0,resultFocus:1},result:'Lisa vertelt dat mantelzorg en piekbelasting elkaar soms versterken. De tijdelijke afspraken geven haar ruimte, maar vragen voorlopig nog flexibiliteit van collega’s.',insight:'Je koos voor vroeg, persoonlijk maatwerk. Dat helpt Lisa, maar lost de teamafhankelijkheid nog niet volledig op.',delayed:{after:2,title:'Lisa — eerste effect',text:'De ziekmeldingen blijven uit, maar een collega vraagt waarom het team opnieuw de roosterpuzzel moet opvangen.',e:{trust:-1,workload:2,points:40}}},
+          {label:'Ik pak eerst de voorspelbaarheid van het hele teamrooster aan en plan daarna een apart patroongesprek met Lisa.',time:1.5,points:330,e:{absence:-.05,preventive:8,trust:5,sustain:6,care:6,workload:-6,productivity:-2,resultFocus:5},result:'De werkverdeling wordt rustiger en minder afhankelijk van één persoon. Het gesprek met Lisa volgt later, waardoor haar individuele patroon nog even onbeantwoord blijft.',insight:'Je koos eerst voor een systeemingreep. Dat verlaagt teamdruk, maar vertraagt de persoonlijke interventie.',delayed:{after:2,title:'Lisa — patroon nog niet weg',text:'Lisa meldt zich niet ziek, maar geeft aan dat de privésituatie nog steeds knelt. Het geplande gesprek wordt belangrijker.',e:{sustain:-1,points:20}}},
+          {label:'Ik bespreek het patroon direct en maak aanwezigheid, bereikbaarheid en overdracht explicieter, zonder nu maatwerk toe te zeggen.',time:.5,points:220,e:{absence:-.1,preventive:5,trust:-3,sustain:-2,care:5,workload:-1,productivity:4,resultFocus:7},result:'Lisa waardeert de duidelijkheid, maar ervaart het gesprek ook als stevig. De overdracht wordt beter; over de oorzaak van het patroon weet je nog weinig.',insight:'Je koos voor duidelijke verwachtingen en continuïteit. Dat werkt operationeel, maar kan openheid verminderen.',delayed:{after:2,title:'Lisa — voorzichtigheid in gesprek',text:'Lisa houdt zich aan de afspraken, maar deelt minder snel wanneer de belasting oploopt.',e:{trust:-3,points:-40}}}
+        ]
+      },
+      {
+        title:'Het team begint zich te roeren',deadline:2,followUp:'Vervolg · Lisa',reflect:'Hoe leg jij maatwerk uit zonder persoonlijke informatie van een medewerker te delen?',
+        text:'Een collega zegt: “Waarom passen wij ons steeds aan? Iedereen heeft privégedoe.” Je moet privacy beschermen én zorgen dat maatwerk niet als willekeur voelt.',
+        signals:['Spanning in team','Privacy','Perceptie van eerlijkheid'],
+        info:[{label:'Spreek twee collega’s',time:.5,hr:0,reveal:'De irritatie gaat vooral over onverwachte taakverschuivingen en het gevoel dat prioriteiten steeds veranderen.'}],
+        choices:[
+          {label:'Ik leg algemene principes voor maatwerk en werkverdeling vast, zonder Lisa’s persoonlijke situatie te bespreken.',time:1,points:310,e:{trust:7,care:9,workload:-3,productivity:1,preventive:4,resultFocus:2},result:'Het team krijgt een uitlegbaar kader. Niet iedereen vindt de uitkomst ideaal, maar de spelregels worden voorspelbaarder.',insight:'Je maakte maatwerk uitlegbaar zonder privacy op te offeren.'},
+          {label:'Ik houd Lisa’s afspraken volledig individueel en compenseer het team met een roulatie voor achtervang en piekwerk.',time:1,cover:1,points:290,e:{trust:4,care:10,workload:-5,productivity:-1,preventive:2,resultFocus:3},result:'Lisa’s privacy blijft maximaal beschermd en de belasting wordt eerlijker verdeeld. Daar staat extra organisatie en afstemming tegenover.',insight:'Je koos privacy en praktische compensatie, maar met extra organisatie voor het team.'},
+          {label:'Ik maak voor iedereen dezelfde flexibele beschikbaarheidsbanden en bouw Lisa’s aparte afspraak daarin af.',time:1,points:250,e:{trust:2,care:3,sustain:2,workload:-2,productivity:4,preventive:3,resultFocus:7},result:'De aanpak voelt uniform en is makkelijk uit te leggen. Tegelijk verliest Lisa een deel van het maatwerk dat juist voor haar situatie werkte.',insight:'Je koos voor eenvoud en schaalbaarheid boven maximaal individueel maatwerk.'}
+        ]
+      }
+    ]
+  },
+
+  {
+    theme:'Mobiliteit & ontwikkeling',title:'Ravi wil intern bewegen — precies nu het team hem hard nodig heeft',
+    steps:[{
+      title:'Een kans voor Ravi, een risico voor jouw planning',deadline:4,reflect:'Hoeveel continuïteitsrisico vind jij acceptabel om interne mobiliteit echt ruimte te geven?',
+      text:'Ravi wil reageren op een interne functie die goed past bij zijn volgende stap. De reactietermijn sluit over vier dagen. Tegelijk is hij kartrekker van een belangrijke oplevering die nog zes weken loopt.',
+      signals:['Interne vacature','Sleutelmedewerker','Oplevering over 6 weken'],
+      info:[
+        {label:'Voer een loopbaangesprek',time:.5,hr:0,reveal:'Ravi zoekt vooral meer inhoudelijke groei en eigenaarschap. Hij wil graag binnen de organisatie blijven.'},
+        {label:'Bekijk continuïteitsrisico',time:.5,hr:0,reveal:'Twee collega’s kunnen zijn werk overnemen, maar alleen met gerichte overdracht en het schrappen van één interne prioriteit.'},
+        {label:'Check interne mobiliteitsroute',time:.5,hr:1,reveal:'De andere manager staat open voor een gefaseerde overstap, maar wil de beste kandidaat niet onnodig lang laten wachten.'}
+      ],
+      choices:[
+        {label:'Ik steun zijn sollicitatie direct en start nu al met overdracht, ook als onze oplevering daardoor kleiner moet worden.',branch:'support',time:1,cover:1,points:320,e:{trust:10,sustain:9,care:6,workload:-1,productivity:-5,preventive:5,resultFocus:-2},result:'Ravi voelt volledige steun en de overdracht start vroeg. Je team moet wel een deel van de oorspronkelijke scope loslaten.',insight:'Je zette ontwikkeling boven lokale maximalisatie en accepteerde zichtbaar resultaatverlies op korte termijn.'},
+        {label:'Ik steun zijn sollicitatie, maar spreek vooraf met de andere manager een gefaseerde overgang van ongeveer zes weken af.',branch:'phase',time:1,hr:1,points:350,e:{trust:7,sustain:8,care:8,workload:1,productivity:-1,preventive:4,resultFocus:5},result:'Ravi kan solliciteren en de continuïteit blijft redelijk beheersbaar. De afspraak beperkt wel de flexibiliteit van Ravi en de ontvangende manager.',insight:'Je zocht een onderhandelbare middenweg tussen mobiliteit en continuïteit.'},
+        {label:'Ik bied Ravi nu een zwaardere ontwikkelrol in het eigen team en vraag hem de sollicitatie te laten lopen.',branch:'retain',time:.5,points:300,e:{trust:3,sustain:6,care:4,workload:4,productivity:5,preventive:1,resultFocus:8},result:'Ravi krijgt direct meer eigenaarschap en jouw oplevering blijft sterk bezet. De vraag blijft of dit werkelijk de beweging is die hij zocht.',insight:'Je bood ontwikkeling zonder mobiliteit. Dat kan werken, maar ook voelen als lokaal vasthouden.'}
+      ]
+    }]
+  },
+  {
+    theme:'Preventie & werkdruk',title:'Ahmed loopt zichtbaar op zijn tenen',
+    steps:[{
+      title:'De deadline is morgen — de signalen zijn vandaag',deadline:2,reflect:'Wanneer wordt het halen van een deadline een onverantwoord risico voor duurzame inzetbaarheid?',
+      text:'Ahmed maakt al weken overuren, slaat pauzes over en reageert kortaf. Hij is nog niet ziekgemeld. Morgen is een belangrijke klantoplevering en hij bezit cruciale kennis. Geen van de opties is zonder prijs.',
+      signals:['Veel overuren','Kritieke kennis','Klantdeadline morgen'],
+      info:[
+        {label:'Bekijk werkvoorraad',time:.5,hr:0,reveal:'Ahmed heeft 34% meer openstaande taken dan het teamgemiddelde en drie taken zonder back-up.'},
+        {label:'Korte check-in met Ahmed',time:.5,hr:0,reveal:'Hij zegt dat hij de deadline wil halen, maar geeft toe slecht te slapen en bang te zijn collega’s teleur te stellen.'},
+        {label:'Vraag projectleider naar opties',time:.5,hr:0,reveal:'Twee onderdelen kunnen een week schuiven. De klant zal dat merken, maar er is geen contractuele boete.'}
+      ],
+      choices:[
+        {label:'Ik schuif twee onderdelen een week, haal Ahmed direct uit de piek en organiseer structurele back-up.',time:1,cover:1,points:315,e:{absence:-.25,preventive:11,sustain:10,trust:8,workload:-8,productivity:-5,care:6,resultFocus:-2},result:'Ahmed krijgt lucht en kennis wordt verdeeld. De klant krijgt minder dan oorspronkelijk beloofd en vraagt om uitleg.',insight:'Je koos voor preventie en kennisborging, met een directe prijs in klantresultaat.',delayed:{after:1,title:'Klant — kritische reactie',text:'De klant accepteert het uitstel, maar vraagt om een steviger herstelplan voor de volgende mijlpaal.',e:{resultFocus:-2,points:-40}}},
+        {label:'Ahmed rondt alleen het kritieke onderdeel af; daarna neemt een collega verplicht over en krijgt hij herstelruimte.',time:.5,cover:1,points:345,e:{absence:-.1,preventive:7,sustain:6,trust:6,workload:-4,productivity:2,care:5,resultFocus:6},result:'De kern van de oplevering haalt de deadline. Ahmed moet nog één intensieve dag door en de collega die overneemt krijgt extra druk.',insight:'Je koos voor een begrensd compromis: resultaat behouden zonder de volledige piek bij Ahmed te laten.' ,delayed:{after:1,title:'Ahmed — grens bereikt',text:'Ahmed blijft inzetbaar, maar geeft aan dat nog zo’n piek niet haalbaar is. Structurele herverdeling wordt urgent.',e:{workload:2,preventive:-1,points:20}}},
+        {label:'Ik regel voor twee weken tijdelijke ondersteuning uit een ander team zodat Ahmed direct kan afschalen en de deadline blijft staan.',time:1,budget:4,points:325,e:{absence:-.2,preventive:6,sustain:7,trust:5,workload:-7,productivity:4,care:4,resultFocus:8},result:'De deadline blijft intact en Ahmed kan afschalen. Je leunt wel op tijdelijke hulp en de structurele kennisafhankelijkheid is nog niet opgelost.',insight:'Je organiseerde tijd en continuïteit. Effectief, maar nog niet structureel.',delayed:{after:1,title:'Tijdelijke hulp — afhankelijkheid blijft',text:'De tijdelijke ondersteuning werkt goed, maar het team heeft de structurele kennisafhankelijkheid nog niet opgelost.',e:{points:-20}}}
+      ]
+    }]
+  },
+  {
+    theme:'Terugkoppeling',title:'Ravi komt terug op je eerdere keuze',
+    steps:[{callback:'ravi'}]
+  },
+  {
+    theme:'Re-integratie' ,title:'Sophie wil sneller terug dan het advies',
+    steps:[
+      {
+        title:'Motivatie botst met belastbaarheid',deadline:1,
+        text:'Sophie is zes weken uitgevallen en wil vanaf maandag weer volledig werken. Het actuele advies is om geleidelijk op te bouwen. Door onderbezetting zou volledige hervatting het team enorm helpen.',
+        signals:['6 weken uitval','Opbouwadvies','Onderbezetting'],
+        info:[
+          {label:'Lees actuele inzetbaarheidsafspraken',time:.25,hr:0,reveal:'De afgesproken opbouw start met beperkte uren en taken zonder piekdruk.'},
+          {label:'Overleg kort met HR',time:.5,hr:2,reveal:'HR benadrukt dat enthousiasme van de medewerker waardevol is, maar geen vervanging voor een zorgvuldig opbouwpad.'}
+        ],
+        choices:[
+          {label:'We volgen de geleidelijke opbouw en organiseren tijdelijk ander werk voor het team.',time:.5,cover:2,points:450,e:{absence:-.35,sustain:14,trust:9,care:10,workload:2,productivity:-2},result:'Sophie vindt het frustrerend langzaam, maar bouwt stabiel op en weet precies wat wel en niet verwacht wordt.',insight:'Je koos duurzame hervatting boven directe capaciteitswinst.'},
+          {label:'Ze voelt zich goed; ik laat haar volledig starten en monitor dagelijks.',time:.25,points:-100,e:{absence:-.25,sustain:-11,care:-8,trust:3,productivity:5},result:'De eerste week ziet er uitstekend uit. Je verzuimcijfer daalt direct.',insight:'Je koos voor snelle hervatting ondanks een ander opbouwadvies.',delayed:{after:2,title:'Sophie — snelle winst verdampt',text:'Sophie valt opnieuw uit. De terugval duurt langer en het team moet opnieuw improviseren.',e:{absence:.85,sustain:-6,workload:7,productivity:-7,points:-330}}},
+          {label:'Ik stel terugkeer een maand uit om elk risico te vermijden.',time:.25,points:-90,e:{absence:.1,sustain:-4,trust:-4,care:2,productivity:-2},result:'Je vermijdt directe druk, maar benut de mogelijkheden voor passende en geleidelijke hervatting niet.',insight:'Voorzichtigheid werd passiviteit.'}
+        ]
+      },
+      {
+        title:'De rest van het team is op',deadline:3,
+        text:'Tijdens Sophies opbouw loopt de werkdruk bij drie collega’s verder op. Je hebt nog beperkte vervangingscapaciteit en interventiebudget.',
+        signals:['Opbouw loopt','3 collega’s overbelast','Capaciteit schaars'],
+        info:[{label:'Bekijk piekwerk komende 2 weken',time:.5,hr:0,reveal:'Twee interne deadlines zijn zelf opgelegd en kunnen worden verschoven. Eén klantdeadline is hard.'}],
+        choices:[
+          {label:'Ik schrap intern werk, bescherm Sophies opbouw en zet vervanging alleen op de harde deadline.',time:1,cover:2,points:390,e:{workload:-9,productivity:-3,trust:5,sustain:6,preventive:7},result:'Niet alles wordt afgemaakt, maar de belasting daalt waar dat kan en de re-integratie blijft intact.',insight:'Je stuurde op portfolio-prioriteit in plaats van individuele heldhaftigheid.'},
+          {label:'Iedereen zet twee weken een tandje bij; daarna normaliseren we.',time:.5,points:-180,e:{workload:10,productivity:5,sustain:-8,trust:-4},result:'De output stijgt snel. De buffer in het team verdwijnt vrijwel volledig.',insight:'Je gebruikte tijdelijke overbelasting als structurele oplossing.',delayed:{after:2,title:'Team — rekening van de piek',text:'Een tweede medewerker meldt zich ziek na weken extra belasting.',e:{absence:.45,workload:5,points:-210}}},
+          {label:'Ik koop externe capaciteit in voor alle openstaande werkzaamheden.',time:1,budget:5,points:80,e:{workload:-10,productivity:4,care:1},result:'De druk daalt, maar een groot deel van je interventiebudget is weg voor latere casussen.',insight:'Effectief op capaciteit, maar duur en weinig structureel.'}
+        ]
+      }
+    ]
+  },
+  {
+    theme:'Conflict & sociale veiligheid',title:'Noah valt uit na een escalerend conflict',
+    steps:[
+      {
+        title:'Ziekmelding of arbeidsconflict — of allebei?',deadline:1,
+        text:'Na een felle woordenwisseling met een senior collega meldt Noah zich ziek. De collega zegt dat Noah “niet tegen feedback kan”. Noah appt dat hij zich onveilig voelt op het werk.',
+        signals:['Acute ziekmelding','Conflict','Signaal sociale veiligheid'],
+        info:[
+          {label:'Spreek Noah kort',time:.25,hr:0,reveal:'Noah wil niet over medische details praten, maar zegt dat opmerkingen al maanden persoonlijk worden.'},
+          {label:'Vraag HR om procesadvies',time:.5,hr:3,reveal:'HR adviseert de verzuimroute en het conflict-/veiligheidsvraagstuk naast elkaar te behandelen en rollen zorgvuldig te scheiden.'},
+          {label:'Bekijk eerdere signalen',time:.5,hr:0,reveal:'Er zijn twee eerdere teamfeedbackpunten over de toon van dezelfde senior collega.'}
+        ],
+        choices:[
+          {label:'Ik scheid de sporen: verzuim zorgvuldig begeleiden én onafhankelijk het conflict onderzoeken.',time:.5,hr:2,points:500,e:{care:14,trust:12,sustain:5,preventive:8,productivity:-2},result:'Noah ervaart ruimte zonder dat je vooraf schuld vaststelt. Tegelijk krijgt het team een helder en onafhankelijk proces.',insight:'Je behandelde inzetbaarheid, conflict en veiligheid als samenhangende maar verschillende vraagstukken.'},
+          {label:'Ik plan direct een bemiddelingsgesprek met Noah en de senior samen.',time:.5,points:-180,e:{trust:-10,care:-9,productivity:1},result:'Noah voelt zich onder druk gezet om het conflict op te lossen terwijl hij net heeft aangegeven zich onveilig te voelen.',insight:'Je ging te snel naar herstel van de relatie zonder eerst veiligheid en proces te borgen.'},
+          {label:'Ik laat HR het volledig overnemen; ik wil als manager neutraal blijven.',time:.25,hr:4,points:-100,e:{trust:-6,preventive:-5,care:3},result:'Het proces wordt procedureel opgepakt, maar jouw afwezigheid als leidinggevende wordt door het team gevoeld.',insight:'Je verwarde neutraliteit met afstand nemen.'}
+        ]
+      },
+      {
+        title:'De senior is onmisbaar voor een programma',deadline:2,
+        text:'De programmamanager vraagt je het onderzoek “niet groter te maken dan nodig”. De senior medewerker is cruciaal voor een belangrijke migratie over drie weken.',
+        signals:['Businessdruk','Machtsverschil','Lopend onderzoek'],
+        info:[{label:'Check continuïteitsrisico',time:.5,hr:0,reveal:'Er is één interne back-up die met twee dagen overdracht 70% van de werkzaamheden kan overnemen.'}],
+        choices:[
+          {label:'Ik bescherm het proces en regel tijdelijke back-up, ook als de migratie minder comfortabel wordt.',time:1,cover:2,points:420,e:{care:12,trust:8,productivity:-4,workload:2},result:'De migratie wordt krapper gepland, maar het onderzoek blijft geloofwaardig en onafhankelijk.',insight:'Je liet operationele afhankelijkheid het sociale-veiligheidsproces niet dicteren.'},
+          {label:'Ik laat de senior doorwerken en stel verdere stappen tot na de migratie uit.',time:.5,points:-260,e:{trust:-12,care:-14,productivity:4},result:'De planning blijft strak op schema, maar het signaal naar het team is dat cruciale expertise bescherming biedt.',insight:'Je koos continuïteit boven geloofwaardigheid van het proces.',delayed:{after:2,title:'Team — vertrouwen daalt',text:'Twee medewerkers geven in een pulse-check aan dat melden weinig zin lijkt te hebben.',e:{trust:-8,productivity:-2,points:-190}}},
+          {label:'Ik haal de senior per direct volledig uit het werk zonder verdere afweging.',time:.25,points:-70,e:{care:-4,trust:2,workload:7,productivity:-8},result:'Je neemt het signaal serieus, maar creëert een zware maatregel voordat feiten en proportionaliteit zijn onderzocht.',insight:'Daadkracht zonder proportionele processtap kan ook onzorgvuldig zijn.'}
+        ]
+      }
+    ]
+  },
+  {
+    theme:'Twijfel over verzuim',title:'Een collega zegt dat Sam “gewoon op een festival stond”',
+    steps:[{
+      title:'Gerucht, privacy en vertrouwen',deadline:3,
+      text:'Sam is enkele dagen ziekgemeld. Een collega stuurt je een screenshot waarop Sam op een festival lijkt te staan en zegt: “Zie je wel dat hij zich aanstelt.” Het beeld verspreidt zich al in de groepsapp.',
+      signals:['Screenshot','Gerucht in team','Ziekmelding'],
+      info:[
+        {label:'Check wat je feitelijk weet',time:.25,hr:0,reveal:'Je weet alleen dat Sam niet inzetbaar is gemeld. Je hebt geen betrouwbare informatie over wat hij wel of niet kan doen buiten werk.'},
+        {label:'Vraag HR om handelingsadvies',time:.5,hr:2,reveal:'HR adviseert geen medische conclusies te trekken uit sociale media en wel het teamgedrag en eventuele concrete werkafspraken te adresseren.'}
+      ],
+      choices:[
+        {label:'Ik stop het speculeren in het team en bespreek met Sam alleen relevante inzetbaarheids- en werkafspraken.',time:.5,points:400,e:{trust:11,care:13,productivity:0,preventive:3},result:'De groepsapp-discussie stopt. Je bewaakt grenzen zonder mogelijke knelpunten in werkafspraken te negeren.',insight:'Je onderscheidde observeerbaar gedrag van aannames over gezondheid.'},
+        {label:'Ik confronteer Sam met de screenshot en vraag waarom hij wel naar een festival kan.',time:.5,points:-230,e:{trust:-14,care:-12},result:'Het gesprek verschuift direct naar verdedigen en medische aannames. De werkrelatie verslechtert.',insight:'Je maakte een activiteit buiten werk tot bewijs over inzetbaarheid.'},
+        {label:'Ik doe niets; wat collega’s onderling bespreken is privé.',time:0,points:-110,e:{trust:-8,care:-4,workload:1},result:'De speculatie groeit door en het teamklimaat wordt onveiliger voor toekomstige ziekmeldingen.',insight:'Niet ingrijpen was ook een keuze met effect op het teamklimaat.'}
+      ]
+    }]
+  },
+  {
+    theme:'Langdurige uitval & dossier',title:'Mila is al maanden beperkt inzetbaar',
+    steps:[
+      {
+        title:'Veel goede intenties, weinig samenhang',deadline:5,
+        text:'Mila werkt al langere tijd beperkt. Er zijn losse afspraken, verschillende versies van acties en niemand kan in één oogopslag uitleggen wat de actuele route is. Een formeel re-integratiemoment nadert.',
+        signals:['Langdurige uitval','Versnipperde afspraken','Formeel moment nadert'],
+        info:[
+          {label:'Reconstructeer afspraken',time:1,hr:2,reveal:'Twee acties zijn verlopen, één evaluatie ontbreekt en de taakopbouw is nooit expliciet aangepast na een terugval.'},
+          {label:'Plan casusoverleg',time:1,hr:3,reveal:'HR en de inzetbaarheidsadviseur zien vooral een regieprobleem: acties zijn op zichzelf logisch maar niet in samenhang gestuurd.'}
+        ],
+        choices:[
+          {label:'Ik maak één actueel plan met eigenaar, acties, evaluatiemomenten en passende werkzaamheden.',time:1,hr:2,points:460,e:{care:14,sustain:10,trust:5,preventive:7,productivity:1},result:'De route wordt weer voorspelbaar. Mila weet wat er van haar wordt verwacht en jij ziet waar bijsturing nodig is.',insight:'Je herstelde regie in plaats van nóg een losse interventie toe te voegen.'},
+          {label:'Ik zet eerst een externe coach in; misschien doorbreekt dat de situatie.',time:1,budget:3,points:40,e:{sustain:3,care:-3,trust:2},result:'De coaching kan nuttig zijn, maar verandert de versnipperde regie en onduidelijke werkafspraken niet.',insight:'Je voegde een interventie toe voordat het basisproces op orde was.'},
+          {label:'Ik laat HR het dossier repareren en focus zelf op de dagelijkse operatie.',time:.5,hr:4,points:-120,e:{care:2,trust:-5,preventive:-7},result:'Het dossier wordt netter, maar de inhoudelijke sturing en verbinding met het werk blijven dun.',insight:'Een correct dossier vervangt geen actieve regie door de leidinggevende.'}
+        ]
+      },
+      {
+        title:'Passend werk botst met teamprioriteiten',deadline:3,
+        text:'Er is passend werk beschikbaar, maar het zit in een ander team. De andere manager wil het alleen tijdelijk aanbieden als jij capaciteit teruglevert.',
+        signals:['Passend werk beschikbaar','Afdelingsgrens','Capaciteitsruil'],
+        info:[{label:'Bespreek ruilopties',time:.5,hr:0,reveal:'Je kunt één medewerker vier dagen uitlenen, maar dan schuift een interne verbetersprint op.'}],
+        choices:[
+          {label:'Ik maak de ruil en stel de interne verbetersprint uit.',time:.5,cover:1,points:350,e:{sustain:10,care:7,productivity:-3,trust:4},result:'Mila krijgt passend werk met echte waarde. Jouw team accepteert dat een interne verbetering later komt.',insight:'Je keek over teamgrenzen heen om duurzame inzetbaarheid mogelijk te maken.'},
+          {label:'Ik houd de capaciteit; Mila blijft voorlopig beperkt meedraaien in haar oude context.',time:.25,points:-170,e:{sustain:-8,care:-5,workload:2},result:'De operationele planning blijft intact, maar de kans op een betere werkmatch blijft liggen.',insight:'Je beschermde lokale capaciteit ten koste van een bredere oplossing.'},
+          {label:'Ik koop extern passend werk/coaching in.',time:.5,budget:4,points:70,e:{sustain:4,care:3},result:'Er ontstaat een route, maar tegen hoge kosten terwijl intern al een passende optie beschikbaar was.',insight:'Je loste een organisatievraagstuk met budget op.'}
+        ]
+      }
+    ]
+  },
+  {
+    theme:'Toppresteerder & maatwerk',title:'Eva vraagt structureel thuiswerk na terugkerende uitval',
+    steps:[{
+      title:'Maatwerk, prestaties en precedentwerking',deadline:7,
+      text:'Eva is een topperformer met terugkerende uitvalmomenten. Ze vraagt drie maanden vrijwel volledig thuis te werken omdat reizen haar energie kost. Haar functie kan grotendeels op afstand, maar het team werkt twee vaste kantoordagen.',
+      signals:['Toppresteerder','Terugkerende uitval','Teamnorm kantoordagen'],
+      info:[
+        {label:'Analyseer functie-eisen',time:1,hr:1,reveal:'Ongeveer 80% van haar taken kan op afstand. Twee teamactiviteiten vragen fysieke aanwezigheid of vervanging.'},
+        {label:'Bespreek doel en evaluatie',time:.5,hr:0,reveal:'Eva staat open voor een tijdelijke proef met duidelijke output- en evaluatieafspraken.'},
+        {label:'Check teamimpact',time:.5,hr:0,reveal:'Het team heeft vooral bezwaar tegen onduidelijkheid en mogelijke permanente precedentwerking, niet tegen tijdelijk maatwerk op zichzelf.'}
+      ],
+      choices:[
+        {label:'Ik start een tijdelijke proef met heldere doelen, uitzonderingen en evaluatiedatum.',time:1,points:420,e:{trust:10,sustain:10,care:7,productivity:2,workload:-2},result:'Eva blijft inzetbaar en het team begrijpt waarom het maatwerk tijdelijk en toetsbaar is.',insight:'Je maakte maatwerk concreet, tijdelijk en uitlegbaar.'},
+        {label:'Ik keur volledig thuiswerk direct voor onbepaalde tijd goed.',time:.5,points:80,e:{trust:5,sustain:5,care:-5,productivity:2},result:'Eva is opgelucht, maar de open einddatum en onduidelijke teamafspraken roepen nieuwe vragen op.',insight:'Mensgericht, maar zonder duidelijke begrenzing en evaluatie.'},
+        {label:'Ik wijs het af; dezelfde kantoornorm moet voor iedereen gelden.',time:.5,points:-220,e:{absence:.25,trust:-10,sustain:-9,care:-4},result:'De norm blijft simpel en gelijk, maar je laat een mogelijk werkbare aanpassing liggen.',insight:'Je koos uniformiteit boven functioneel en tijdelijk maatwerk.',delayed:{after:1,title:'Eva — nieuwe uitval',text:'Na twee weken volledige reisbelasting meldt Eva zich opnieuw ziek.',e:{absence:.35,points:-180,sustain:-4}}}
+      ]
+    }]
+  },
+  {
+    theme:'Systemisch verzuim',title:'Vier ziekmeldingen in één teamcluster',
+    steps:[
+      {
+        title:'Vier individuen — of één systeemsignaal?',deadline:2,
+        text:'Binnen zes weken vallen vier medewerkers uit dezelfde productketen uit. De oorzaken verschillen op papier. Tegelijk is er een reorganisatie, twee vacatures en een forse stijging van incidentwerk.',
+        signals:['4 uitvallers','Reorganisatie','2 vacatures','Incidentpiek'],
+        info:[
+          {label:'Bekijk workload-data',time:.5,hr:0,reveal:'Incidenturen zijn 41% gestegen, terwijl de bezetting 12% lager ligt.'},
+          {label:'Doe korte team-pulse',time:.5,hr:1,reveal:'Mensen noemen vooral onduidelijke prioriteiten, veel interrupties en het gevoel dat “alles P1” is.'},
+          {label:'Vergelijk andere teams',time:.5,hr:0,reveal:'Teams met dezelfde reorganisatie maar minder incidentwerk laten geen vergelijkbare verzuimstijging zien.'}
+        ],
+        choices:[
+          {label:'Ik behandel dit als systeemsignaal: stop werk, verscherp prioriteiten en herstel capaciteit.',time:1,budget:2,cover:1,points:560,e:{absence:-.45,preventive:16,sustain:14,trust:9,workload:-13,productivity:-4,care:5},result:'Een deel van de roadmap schuift. De keten krijgt rust, minder interrupties en expliciete keuzes over wat níet gebeurt.',insight:'Je keek voorbij individuele dossiers naar het werkontwerp en de belasting van het systeem.',delayed:{after:1,title:'Cluster — stabilisatie zichtbaar',text:'Nieuwe ziekmeldingen blijven uit en het aantal incidentoverdrachten daalt.',e:{absence:-.25,workload:-4,points:170}}},
+          {label:'Ik zet per uitvaller een individuele interventie in.',time:1,budget:5,hr:2,points:40,e:{trust:2,sustain:1,care:3,workload:2},result:'De individuele begeleiding is zorgvuldig, maar de gezamenlijke bron van druk blijft bestaan.',insight:'Je behandelde een mogelijk systeemprobleem vooral als vier losse casussen.'},
+          {label:'Ik vraag het team om de komende maand extra scherp op aanwezigheid te sturen.',time:.5,points:-340,e:{absence:-.1,trust:-15,sustain:-12,workload:7,productivity:4},result:'De aanwezigheid lijkt eerst te verbeteren. De druk om je niet ziek te melden neemt echter toe.',insight:'Je stuurde op aanwezigheid in plaats van op duurzame inzetbaarheid.',delayed:{after:1,title:'Cluster — presenteïsme',text:'Mensen zijn vaker aanwezig maar melden meer fouten en herstelwerk. Eén medewerker valt alsnog langer uit.',e:{absence:.6,trust:-5,productivity:-6,points:-270}}}
+        ]
+      },
+      {
+        title:'De directie wil vóór vrijdag een lager verzuimcijfer',deadline:1,
+        text:'Je krijgt de vraag om “zichtbaar resultaat” te laten zien. Sommige interventies verlagen het cijfer snel, andere verbeteren vooral de onderliggende inzetbaarheid.',
+        signals:['Bestuurlijke druk','Korte termijn','Meetbare KPI'],
+        info:[{label:'Bekijk score-opbouw',time:.25,hr:0,reveal:'De managementscore beloont niet alleen verzuimontwikkeling, maar ook vertrouwen, duurzaamheid, zorgvuldigheid en preventief handelen. Alleen het percentage verlagen is dus niet genoeg.'}],
+        choices:[
+          {label:'Ik rapporteer het cijfer én de onderliggende risico’s, maatregelen en verwachte doorlooptijd.',time:.5,points:450,e:{care:10,trust:5,preventive:9,productivity:1},result:'Je geeft geen cosmetische belofte, maar wel een bestuurbaar verhaal met keuzes, indicatoren en tijdpad.',insight:'Je maakte onzekerheid bestuurbaar zonder het KPI-probleem weg te poetsen.'},
+          {label:'Ik zet maximaal in op snelle volledige hervattingen om het percentage te drukken.',time:.5,points:-300,e:{absence:-.55,sustain:-15,trust:-10,care:-9,productivity:5},result:'Het dashboard ziet er vrijdag beter uit. De kans op terugval en stille overbelasting stijgt.',insight:'Je optimaliseerde het zichtbare cijfer ten koste van de kwaliteit eronder.',delayed:{after:1,title:'Na de rapportage — terugval',text:'Twee snelle hervattingen blijken niet stabiel. Het verzuimpercentage stijgt weer.',e:{absence:.75,sustain:-4,points:-300}}},
+          {label:'Ik weiger op verzuimcijfers te sturen; welzijn is niet meetbaar.',time:.25,points:-130,e:{care:2,preventive:-4,productivity:-2},result:'Je voorkomt cijferfetisjisme, maar laat ook de kans liggen om prestaties, risico’s en inzetbaarheid samen te sturen.',insight:'Mensgericht leiderschap vraagt niet om géén cijfers, maar om betere duiding van cijfers.'}
+        ]
+      }
+    ]
+  }
+];
+
+const inboxEvents=[
+  {afterScenario:2,title:'Directie vraagt om een herstelprognose',text:'De directie wil vandaag weten wanneer de capaciteit weer “normaal” is. Je informatie is nog onzeker.',choices:[
+    {label:'Ik geef een bandbreedte, aannames en eerstvolgend evaluatiemoment.',points:180,e:{care:5,trust:2}},
+    {label:'Ik noem één harde datum om duidelijkheid te geven.',points:-110,e:{care:-5,trust:-2,productivity:1}}
+  ]},
+  {afterScenario:5,title:'HR-capaciteit staat onder druk',text:'Je HR-partner kan deze week nog maar beperkt ondersteunen. Je moet kiezen waar je adviesuren het meeste waarde toevoegen.',choices:[
+    {label:'Ik reserveer HR-uren voor complexe proces- en veiligheidsvraagstukken.',hr:+3,points:140,e:{care:4,preventive:2}},
+    {label:'Ik gebruik HR vooral voor administratieve dossierchecks.',hr:+1,points:-40,e:{care:1}}
+  ]},
+  {afterScenario:7,title:'Pulse-check uit het team',text:'Een korte pulse laat zien dat mensen je beslissingen meestal begrijpen, maar niet altijd weten welke prioriteiten vervallen als capaciteit daalt.',choices:[
+    {label:'Ik publiceer expliciete stop/door/uitstel-prioriteiten voor de komende maand.',points:200,e:{trust:5,workload:-4,productivity:2}},
+    {label:'Ik houd flexibiliteit; prioriteiten verschillen per dag.',points:-80,e:{trust:-3,workload:3}}
+  ]}
+];
+
+const peers=[{name:'Sophie',rate:348,offset:22},{name:'Ahmed',rate:333,offset:12},{name:'Nina',rate:319,offset:6},{name:'David',rate:304,offset:0},{name:'Fatima',rate:291,offset:-5},{name:'Jeroen',rate:278,offset:-10}];
+
+// De volledige campagne beslaat één maand. Deze demo speelt de eerste drie situaties tot dag 10.
+const scenarioStartDays=[1,4,7,10,13,16,19,22,25,28];
+const DEMO_SCENARIOS=4;
+const DEMO_END_DAY=12;
+const initialState={scenario:0,step:0,elapsed:0,campaignTime:0,absence:6.2,points:0,preventive:62,trust:68,sustain:64,care:66,resultFocus:66,workload:72,productivity:84,budget:12,hr:20,cover:8,answers:[],reveals:[],pending:[],inbox:[],history:[],shownEvents:[]};
+let state=structuredClone(initialState);
+const $=id=>document.getElementById(id); const clamp=n=>Math.max(0,Math.min(100,n)); const fmt=n=>n.toFixed(1).replace('.',','); const pts=n=>Math.round(n).toLocaleString('nl-NL'); const duration=n=>n===.5?'½ dag':n===1?'1 dag':`${String(n).replace('.',',')} dagen`;
+
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));window.scrollTo({top:0,behavior:'smooth'})}
+function raviBranch(){
+  const a=[...state.answers].reverse().find(x=>x.branch);
+  return a?.branch||'phase';
+}
+function raviCallbackStep(){
+  const branch=raviBranch();
+  if(branch==='support')return {
+    title:'De andere manager wil Ravi over twee weken hebben',deadline:2,followUp:'Vervolg · Ravi · je eerdere keuze werkt door',callbackSource:'ravi',reflect:'Blijf je consequent bij een eerdere keuze als de omstandigheden daarna veranderen?',
+    text:'Ravi is door naar de laatste ronde. De ontvangende manager wil hem al over twee weken laten starten. Jouw oplevering loopt dan nog vier weken en de overdracht is pas half klaar.',
+    signals:['Eerdere keuze werkt door','Start over 2 weken','Overdracht half klaar'],
+    info:[{label:'Check resterende opleverscope',time:.5,hr:0,reveal:'Je kunt de oplevering halen als je één niet-kritiek onderdeel schrapt of tijdelijk extra capaciteit inzet.'}],
+    choices:[
+      {label:'Ik laat Ravi over twee weken gaan, schrap een onderdeel en maak de overdracht in die tijd af.',time:1,points:310,e:{trust:8,sustain:6,care:6,productivity:-5,resultFocus:0},result:'Je eerdere steun blijft geloofwaardig. De oplevering wordt kleiner, maar de overgang is helder en Ravi vertrekt zonder gedoe.',insight:'Je bleef consistent met je eerdere keuze en accepteerde opnieuw een zichtbaar resultaatoffer.'},
+      {label:'Ik vraag de andere manager om vier weken overgang in plaats van twee en betrek Ravi bij die onderhandeling.',time:.5,points:335,e:{trust:5,sustain:5,care:8,productivity:-1,resultFocus:5},result:'Er komt een compromis van drie weken. Ravi vindt het redelijk, al had hij liever sneller bewogen.',insight:'Je heronderhandelde de consequentie zonder de mobiliteit terug te draaien.'},
+      {label:'Ik houd vast aan de oorspronkelijke oplevering en koop voor de laatste weken extra capaciteit in.',time:.5,budget:3,points:320,e:{trust:7,sustain:5,care:5,workload:-3,productivity:4,resultFocus:8},result:'Ravi kan op tijd vertrekken én de oplevering blijft grotendeels staan. Je betaalt daarvoor met schaars interventiebudget.',insight:'Je beschermde zowel mobiliteit als resultaat, maar tegen een financiële en capacitaire prijs.'}
+    ]
+  };
+  if(branch==='retain')return {
+    title:'Ravi vraagt: “Is dit echt mijn volgende stap?”',deadline:2,followUp:'Vervolg · Ravi · je eerdere keuze werkt door',callbackSource:'ravi',reflect:'Wanneer wordt een ontwikkelaanbod een vorm van vasthouden in plaats van echte ontwikkeling?',
+    text:'Ravi draait de zwaardere rol goed, maar de interne vacature sluit morgen. Hij vraagt je expliciet of jouw aanbod een echte ontwikkelstap is of vooral bedoeld was om hem voor de oplevering te behouden.',
+    signals:['Eerdere keuze werkt door','Vacature sluit morgen','Vertrouwensmoment'],
+    info:[{label:'Bekijk ruimte voor structurele rol',time:.5,hr:1,reveal:'Je kunt de zwaardere rol structureel maken, maar pas na formele waardering en zonder garantie op snelle doorgroei.'}],
+    choices:[
+      {label:'Ik zeg expliciet dat hij alsnog moet solliciteren als die functie beter past, en start nu met back-up.',time:1,cover:1,points:330,e:{trust:9,sustain:7,care:8,productivity:-3,resultFocus:1},result:'Ravi waardeert de openheid en solliciteert alsnog. Jij verliest mogelijk capaciteit, maar herstelt de ruimte voor een echte keuze.',insight:'Je corrigeerde het risico dat ontwikkeling als retentiemiddel werd gebruikt.'},
+      {label:'Ik maak de zwaardere rol formeel voor zes maanden, met een evaluatiemoment en duidelijke ontwikkeldoelen.',time:1,hr:2,points:340,e:{trust:6,sustain:8,care:7,workload:2,productivity:4,resultFocus:6},result:'Ravi kiest ervoor de vacature te laten lopen. Hij krijgt een concrete ontwikkelroute, maar de vraag naar bredere mobiliteit is niet definitief weg.',insight:'Je maakte je eerdere aanbod geloofwaardiger door het concreet en toetsbaar te maken.'},
+      {label:'Ik laat de keuze volledig bij Ravi en richt me alleen op het continuïteitsplan voor het team.',time:.5,points:300,e:{trust:4,sustain:4,care:7,workload:-1,productivity:1,resultFocus:5},result:'Ravi waardeert dat je niet meer stuurt op zijn beslissing. Tegelijk mist hij wat richting over zijn ontwikkeling.',insight:'Je koos voor autonomie en rolzuiverheid, maar bood minder actief loopbaanleiderschap.'}
+    ]
+  };
+  return {
+    title:'De gefaseerde overgang wordt onder druk gezet',deadline:2,followUp:'Vervolg · Ravi · je eerdere keuze werkt door',callbackSource:'ravi',reflect:'Wanneer is het verstandig een eerder gemaakte afspraak opnieuw te onderhandelen?',
+    text:'Ravi is geselecteerd. De andere manager wil hem nu toch eerder laten starten omdat er onverwacht iemand uitvalt. Jullie afspraak van ongeveer zes weken staat ineens onder druk.',
+    signals:['Eerdere keuze werkt door','Nieuwe uitval elders','Afspraak onder druk'],
+    info:[{label:'Bel de ontvangende manager',time:.5,hr:0,reveal:'De andere manager kan leven met een gefaseerde start: Ravi werkt tijdelijk twee dagen daar en drie dagen bij jou.'}],
+    choices:[
+      {label:'Ik houd vast aan de zes weken: afspraken zijn afspraken en mijn team heeft die tijd nodig.',time:.5,points:300,e:{trust:2,sustain:3,care:7,productivity:4,resultFocus:7},result:'Jouw continuïteit blijft sterk. Ravi begrijpt de afspraak, maar merkt dat zijn nieuwe team direct onder druk staat.',insight:'Je koos voorspelbaarheid en continuïteit, maar gaf weinig ruimte aan veranderde omstandigheden.'},
+      {label:'Ik maak er drie weken van en schrap één interne prioriteit om de overdracht te versnellen.',time:1,points:345,e:{trust:7,sustain:6,care:7,workload:-2,productivity:-3,resultFocus:3},result:'Beide teams moeten aanpassen, maar de overgang wordt geloofwaardig versneld zonder Ravi volledig los te trekken.',insight:'Je herijkte de afspraak op basis van nieuwe informatie en verdeelde de pijn.'},
+      {label:'Ik start direct met een 2/3-verdeling tussen beide teams en evalueer na twee weken.',time:1,points:330,e:{trust:6,sustain:5,care:6,workload:3,productivity:0,resultFocus:5},result:'Ravi beweegt meteen, maar werkt tijdelijk in twee werelden. Dat helpt beide teams en verhoogt tegelijk de kans op versnippering.',insight:'Je koos flexibiliteit, met een duidelijk risico op dubbele belasting.'}
+    ]
+  };
+}
+function currentStep(){
+  const step=scenarios[state.scenario].steps[state.step];
+  return step.callback==='ravi'?raviCallbackStep():step;
+}
+function campaignDay(){return Math.min(30,Math.floor(state.campaignTime)+1)}
+function advanceCampaignTime(days=0){state.campaignTime=Math.min(29,state.campaignTime+(days||0))}
+function syncScenarioDay(){const start=scenarioStartDays[state.scenario]||1;state.campaignTime=Math.max(state.campaignTime,start-1)}
+function totalSteps(){return scenarios.reduce((a,s)=>a+s.steps.length,0)}
+function currentStepNumber(){let n=0;for(let i=0;i<state.scenario;i++)n+=scenarios[i].steps.length;return n+state.step+1}
+function effectLabel(k,v){
+  if(k==='absence')return `Verzuim ${v>0?'+':''}${fmt(v)}%`;
+  const names={preventive:'Preventief handelen',trust:'Vertrouwen',sustain:'Duurzame inzetbaarheid',care:'Zorgvuldigheid',workload:'Werkdruk',productivity:'Productiviteit'};
+  const direction=v>0?'↑':'↓';
+  return `${names[k]||k} ${direction}`;
+}
+function effectTone(k,v){
+  if(k==='absence'||k==='workload')return v<0?'positive':v>0?'negative':'neutral';
+  return v>0?'positive':v<0?'negative':'neutral';
+}
+
+
+function perspectivesFor(s,step,c,i){const title=s.title||'';if(title.includes('Lisa')){if(step.title.includes('patroon')){const sets=[[{role:'Lisa',text:'“Fijn dat we naar mijn situatie kijken zonder er meteen een oordeel aan te hangen.”'},{role:'Collega uit het team',text:'“Ik snap het, maar ik wil wel weten hoe lang wij onverwachte taken blijven opvangen.”'}],[{role:'Collega uit het team',text:'“Eindelijk kijken we ook naar waarom het rooster steeds zo kwetsbaar is.”'},{role:'Lisa',text:'“Prima dat het teamrooster verandert, maar ik hoop dat mijn eigen situatie ook nog besproken wordt.”'}],[{role:'Lisa',text:'“Ik weet nu duidelijker wat er van mij verwacht wordt, al voelt het gesprek best stevig.”'},{role:'Teamcoördinator',text:'“De overdracht is duidelijker; dat helpt ons operationeel meteen.”'}]];return sets[i]||sets[0]}const sets=[[{role:'Collega uit het team',text:'“Als de spelregels voor iedereen helder zijn, kan ik maatwerk beter plaatsen.”'},{role:'Lisa',text:'“Fijn dat mijn persoonlijke situatie niet in het team besproken hoeft te worden.”'}],[{role:'Lisa',text:'“Ik waardeer dat mijn afspraken privé blijven.”'},{role:'Collega uit het team',text:'“De roulatie is eerlijker, maar vraagt wel extra organisatie van ons allemaal.”'}],[{role:'Teamcoördinator',text:'“Eén systeem voor iedereen is makkelijk uit te voeren.”'},{role:'Lisa',text:'“Ik verlies hiermee wel precies het maatwerk dat voor mij verschil maakte.”'}]];return sets[i]||sets[0]}if(title.startsWith('Ravi wil')){const map={support:[{role:'Ravi',text:'“Dit voelt alsof mijn ontwikkeling echt serieus wordt genomen.”'},{role:'Projectleider',text:'“Dan moeten we nu wel eerlijk zijn over wat we nog wél kunnen opleveren.”'}],phase:[{role:'Ravi',text:'“Dit is werkbaar, zolang zes weken geen stil uitstel wordt.”'},{role:'Ontvangende manager',text:'“Ik snap de overgang, maar ik wil een goede kandidaat ook snel kunnen inzetten.”'}],retain:[{role:'Ravi',text:'“De rol klinkt interessant, maar is dit mijn ontwikkeling of vooral jullie oplossing?”'},{role:'Projectleider',text:'“Voor onze planning is dit natuurlijk de meest comfortabele route.”'}]};return map[c.branch]||map.phase}if(title.includes('Ahmed')){const sets=[[{role:'Ahmed',text:'“Ik ben opgelucht dat niet alles meer op mij leunt.”'},{role:'Klant',text:'“Ik begrijp het, maar ik verwacht wel een geloofwaardig herstelplan.”'}],[{role:'Ahmed',text:'“Nog één dag lukt, juist omdat er daarna echt een grens staat.”'},{role:'Collega',text:'“Ik neem het over, maar dan moet mijn eigen werk ook opnieuw geprioriteerd worden.”'}],[{role:'Ahmed',text:'“Directe ondersteuning geeft lucht zonder dat de deadline verdwijnt.”'},{role:'Teamcoördinator',text:'“Dit helpt nu, maar we moeten voorkomen dat tijdelijke hulp het structurele probleem maskeert.”'}]];return sets[i]||sets[0]}if(s.theme==='Terugkoppeling')return [{role:'Ravi',text:'“Ik merk nu pas echt wat de eerdere afspraak in de praktijk voor mijn overstap betekent.”'},{role:'Andere manager',text:'“De omstandigheden zijn veranderd; ik hoop dat we opnieuw kunnen afwegen in plaats van alleen vasthouden.”'}];return [{role:'Medewerker',text:'“Deze keuze is voor mij meer dan een procesbesluit; ik merk hem in mijn dagelijkse werk.”'},{role:'Team',text:'“Wat voor één persoon logisch is, kan elders in het team een ander effect hebben.”'}]}
+function renderPerspectives(s,step,c,i){const voices=perspectivesFor(s,step,c,i);$('perspectiveBox').innerHTML=`<div class="learning-kicker">Zo kan je keuze worden ervaren</div>`+voices.map(v=>`<div class="perspective-card"><div class="perspective-role"><span class="perspective-avatar">${v.role.charAt(0)}</span>${v.role}</div><p>${v.text}</p></div>`).join('')}
+function downsideText(c){const e=c.e||{},risks=[];if((e.workload||0)>0)risks.push('de werkdruk kan oplopen');if((e.trust||0)<0)risks.push('vertrouwen kan onder druk komen');if((e.sustain||0)<0)risks.push('duurzame inzetbaarheid kan verslechteren');if((e.productivity||0)<0)risks.push('je levert op korte termijn productiviteit in');if((e.resultFocus||0)<0)risks.push('het directe organisatieresultaat wordt kwetsbaarder');if((e.absence||0)>0)risks.push('het verzuimrisico neemt toe');if(!risks.length)return 'Ook een verdedigbare keuze kan later onverwachte neveneffecten hebben. Blijf daarom volgen wat er in het team verandert.';if(risks.length===1)return `De keerzijde: ${risks[0]}.`;return `De belangrijkste trade-off: ${risks[0]}; daarnaast ${risks[1]}.`}
+function learningQuestion(step){return step.reflect||'Welke informatie of randvoorwaarde zou jouw keuze in de praktijk kunnen veranderen?'}
+function applyEffects(e={}){for(const [k,v] of Object.entries(e)){if(k==='absence')state.absence=Math.max(0,state.absence+v);else if(k==='points')state.points+=v;else if(['preventive','trust','sustain','care','resultFocus','workload','productivity'].includes(k))state[k]=clamp(state[k]+v)}}
+function useResources(item){}
+function canAfford(item){
+  const left=Math.max(0,currentStep().deadline-state.elapsed);
+  return (item.time||0)<=left+0.0001;
+}
+function costText(item){
+  if(!item.time)return 'direct';
+  return `kost ${duration(item.time)}`;
+}
+function workloadText(v){if(v>=78)return 'Zeer hoog';if(v>=65)return 'Hoog';if(v>=48)return 'Verhoogd';return 'Beheersbaar'}
+function signalText(v){if(v>=80)return 'Sterk';if(v>=65)return 'Goed';if(v>=50)return 'Aandacht';return 'Kwetsbaar'}
+
+function updateSidebar(){
+  $('scoreValue').textContent=fmt(state.absence);$('pointsValue').textContent=pts(state.points);
+  $('trustLabel').textContent=signalText(state.trust);$('trustBar').style.width=`${state.trust}%`;
+  $('sustainLabel').textContent=signalText(state.sustain);$('sustainBar').style.width=`${state.sustain}%`;
+  $('workloadLabel').textContent=workloadText(state.workload);$('workloadBar').style.width=`${state.workload}%`;
+  $('productivityLabel').textContent=`${Math.round(state.productivity)}%`;$('productivityBar').style.width=`${state.productivity}%`;
+  renderLeaderboard();renderHistory();
+}
+function peerScore(p){const decisions=state.answers.length;if(!decisions)return 0;return Math.max(0,Math.round(decisions*p.rate+p.offset+Math.max(0,campaignDay()-1)*3))}
+function choiceScore(c,step){const e=c.e||{};const afweging=Math.max(80,Math.min(220,Math.round((c.points||260)*.56)));let raw=(e.trust||0)*1.7+(e.sustain||0)*1.8+(e.preventive||0)*1.5+(e.care||0)*1.3+(e.productivity||0)*1.1+(e.resultFocus||0)*1.15-(e.workload||0)*1.5-(e.absence||0)*75;const effect=Math.max(55,Math.min(170,Math.round(95+raw*1.15)));const leftAfter=Math.max(0,step.deadline-state.elapsed-(c.time||0));const timing=Math.max(0,Math.min(80,Math.round(80*(leftAfter/step.deadline))));return {afweging,effect,timing,total:afweging+effect+timing}}
+function managerRank(score=state.points){const all=[...peers.map(peerScore),score].sort((a,b)=>b-a);return all.indexOf(score)+1}
+function renderLeaderboard(){const all=[...peers.map(p=>({name:p.name,score:peerScore(p),you:false})),{name:'Jij',score:state.points,you:true}].sort((a,b)=>b.score-a.score);$('leaderboard').innerHTML=`<div class="board-caption">Stand na dag ${campaignDay()}</div>`+all.map((p,i)=>`<div class="board-row ${p.you?'you':''}"><span class="rank">${i+1}</span><span>${p.name}</span><span class="board-score">${pts(p.score)}</span></div>`).join('')}
+function addHistory(type,title,body,points=0,day=campaignDay(),effects={}){state.history.push({day:Math.max(1,Math.min(30,Math.round(day))),type,title,body,points,effects});renderHistory()}
+function renderHistory(){
+  const el=$('campaignHistory');if(!el)return;if(!state.history.length){el.innerHTML='<div class="history-empty">Je campagnegeschiedenis verschijnt hier zodra je keuzes maakt.</div>';return}
+  el.innerHTML=state.history.map(h=>{const entries=Object.entries(h.effects||{}).filter(([k,v])=>v&&['absence','trust','sustain','care','workload','productivity','preventive'].includes(k)).slice(0,4);const impacts=entries.length?`<div class="history-effects">${entries.map(([k,v])=>`<span class="history-effect ${effectTone(k,v)}">${effectLabel(k,v)}</span>`).join('')}</div>`:'';return `<div class="history-item"><div class="history-day">Dag ${h.day}</div><div class="history-type">${h.type}</div><div class="history-main"><strong>${h.title}</strong><p>${h.body}</p>${impacts}</div><div class="history-points ${h.points<0?'negative':h.points>0?'positive':''}">${h.points?`${h.points>0?'+':''}${pts(h.points)} pt`:''}</div></div>`}).join('');el.scrollTop=el.scrollHeight
+}
+function updateDeadline(){const step=currentStep(),left=Math.max(0,step.deadline-state.elapsed),ratio=Math.max(0,left/step.deadline);$('deadlineText').textContent=`Handel binnen ${duration(step.deadline)}`;$('deadlineLeft').textContent=left>0?`nog ${duration(left)}`:'Handelingsvenster verstreken';$('deadlineFill').style.width=`${ratio*100}%`;$('deadlineBox').classList.toggle('danger',left<=.5)}
+function progress(){const day=campaignDay(),week=Math.min(4,Math.floor((day-1)/7)+1);$('progressText').textContent=`Week ${week} · dag ${day} van 30`;$('calendarToday').textContent=day===DEMO_END_DAY?'Demo-checkpoint':'Vandaag';const eventDays=new Set((state.history||[]).map(h=>Math.round(h.day)));const groups=[[1,7],[8,14],[15,21],[22,30]];$('calendarWeeks').innerHTML=groups.map(([a,b],idx)=>`<div class=\"cal-week\"><div class=\"cal-week-label\"><span>Week ${idx+1}</span><span>${a}–${b}</span></div><div class=\"cal-days\">${Array.from({length:b-a+1},(_,j)=>{const d=a+j,cls=['cal-day',d<day?'past':'',d===day?'today':'',eventDays.has(d)?'has-event':''].filter(Boolean).join(' ');return `<i class=\"${cls}\" title=\"Dag ${d}\"></i>`}).join('')}</div></div>`).join('')}
+
+function renderStep(){
+  syncScenarioDay();const s=scenarios[state.scenario],step=currentStep();state.elapsed=0;state.reveals=[];$('notice').classList.remove('show');
+  $('caseTheme').textContent=s.theme;$('caseNumber').textContent=`DEMO ${String(state.scenario+1).padStart(2,'0')} / ${String(DEMO_SCENARIOS).padStart(2,'0')}`;$('caseTitle').textContent=step.title;
+  let storyText=step.text;
+  if(step.followUp){
+    const previous=step.callbackSource==='ravi'?[...state.answers].reverse().find(a=>a.branch):[...state.answers].reverse().find(a=>a.scenario===s.title);
+    if(previous){const who=step.callbackSource==='ravi'?'Ravi':'Lisa';storyText=`Bij ${who} koos je eerder voor: “${previous.choice}” ${step.text}`}
+  }
+  $('caseText').textContent=storyText;$('caseSignals').innerHTML=step.signals.map(x=>`<span class="signal">${x}</span>`).join('');
+  $('revealed').innerHTML='';$('resultBox').classList.remove('show');$('choices').innerHTML='';$('infoActions').innerHTML='';$('infoBlock').style.display=step.info?.length?'block':'none';
+  (step.info||[]).forEach((info,i)=>{const b=document.createElement('button');b.className='info-btn';b.dataset.infoIndex=i;b.innerHTML=`${info.label} <span>kost ${duration(info.time)}</span>`;b.onclick=()=>revealInfo(i,b);$('infoActions').appendChild(b)});
+  step.choices.forEach((c,i)=>{const b=document.createElement('button');b.className='choice';b.dataset.choiceIndex=i;b.disabled=!canAfford(c);b.innerHTML=`<span class="choice-letter">${String.fromCharCode(65+i)}</span><span class="choice-text">${c.label}</span><span class="choice-cost">${costText(c)}</span>`;b.onclick=()=>choose(c,i,b);$('choices').appendChild(b)});
+  refreshAffordability();
+  $('nextBtn').textContent=(state.scenario===scenarios.length-1&&state.step===s.steps.length-1)?'Bekijk eindscore →':'Verder →';progress();updateDeadline();updateSidebar();applyDueEffects();
+}
+function refreshAffordability(){
+  const step=currentStep();
+  document.querySelectorAll('#infoActions .info-btn').forEach((b,i)=>{if(b.dataset.used==='1'){b.disabled=true;return}const item=(step.info||[])[i],ok=canAfford(item);b.disabled=!ok;b.classList.toggle('time-locked',!ok);if(!ok)b.title='Niet genoeg tijd meer binnen het handelingsvenster'});
+  document.querySelectorAll('#choices .choice').forEach((b,i)=>{if(b.classList.contains('selected'))return;const item=step.choices[i],ok=canAfford(item);b.disabled=!ok;b.classList.toggle('time-locked',!ok);const cost=b.querySelector('.choice-cost');if(cost)cost.textContent=ok?costText(item):'Niet meer haalbaar'});
+}
+function revealInfo(i,button){const info=currentStep().info[i];if(!canAfford(info))return;state.elapsed+=info.time||0;advanceCampaignTime(info.time||0);useResources(info);state.reveals.push(info.reveal);button.dataset.used='1';button.disabled=true;$('revealed').innerHTML=state.reveals.map(x=>`<div class="reveal">${x}</div>`).join('');updateDeadline();progress();updateSidebar();refreshAffordability();applyDueEffects()}
+function missedDeadlinePenalty(){const step=currentStep();if(state.elapsed<=step.deadline)return null;const over=state.elapsed-step.deadline;const penalty=Math.min(280,Math.round(80+over*90));state.points-=penalty;state.preventive=clamp(state.preventive-4);state.trust=clamp(state.trust-2);return `Te laat gehandeld: −${penalty} pt`}
+function choose(c,i,button){if(!canAfford(c))return;const beforePoints=state.points,beforeRank=managerRank(beforePoints),step=currentStep(),s=scenarios[state.scenario],decisionDay=campaignDay(),breakdown=choiceScore(c,step);document.querySelectorAll('#choices .choice').forEach(x=>x.disabled=true);document.querySelectorAll('#infoActions .info-btn').forEach(x=>x.disabled=true);button.classList.add('selected');state.elapsed+=c.time||0;advanceCampaignTime(c.time||0);useResources(c);applyEffects(c.e);state.points+=breakdown.total;const late=missedDeadlinePenalty();if(c.delayed){const delayDays=c.delayed.afterDays??Math.max(2,(c.delayed.after||1)*2);state.pending.push({...c.delayed,dueDay:Math.min(30,campaignDay()+delayDays)})}const delta=state.points-beforePoints;state.answers.push({scenario:s.title,step:step.title,choice:c.label,insight:c.insight,points:delta,branch:c.branch||null,day:decisionDay,breakdown});addHistory('Keuze',`${s.title} · ${step.title}`,c.label,delta,decisionDay,c.e||{});const afterRank=managerRank(state.points);$('resultPointsDelta').textContent=`${delta>=0?'+':''}${pts(delta)}`;$('resultPointsDelta').classList.toggle('negative',delta<0);$('scoreJudgement').textContent=`+${pts(breakdown.afweging)}`;$('scoreEffect').textContent=`+${pts(breakdown.effect)}`;$('scoreTiming').textContent=`+${pts(breakdown.timing)}`;$('resultRankMove').textContent=beforeRank===afterRank?`#${afterRank}`:`#${beforeRank} → #${afterRank}`;$('resultBadge').textContent=delta>=360?'● Sterke zet':delta>=300?'● Goede afweging':delta>=240?'● Keuze met duidelijke trade-offs':'● Keuze met een prijs';$('resultTitle').textContent=c.resultTitle||'Dit gebeurt er nu';$('resultText').textContent=c.result;const effects=Object.entries(c.e||{}).filter(([k,v])=>v&&['absence','trust','sustain','care','workload','productivity','preventive'].includes(k)).slice(0,5);$('effectTags').innerHTML=effects.map(([k,v])=>`<span class="effect-tag ${effectTone(k,v)}">${effectLabel(k,v)}</span>`).join('')+(late?`<span class="effect-tag negative">${late}</span>`:'');renderPerspectives(s,step,c,i);$('learningInsight').textContent=c.insight||'Je keuze laat zien hoe je belangen tussen mens, team en organisatie afweegt.';$('learningRisk').textContent=downsideText(c);$('learningQuestion').textContent=learningQuestion(step);$('resultBox').classList.add('show');updateDeadline();progress();updateSidebar();$('resultBox').scrollIntoView({behavior:'smooth',block:'nearest'})}
+function showConsequencePopup(p){
+  const pointDelta=(p.e||{}).points||0;$('modalKicker').textContent='Gevolg van eerdere keuze';$('modalTitle').textContent=p.title;$('modalText').textContent=p.text;
+  const effects=Object.entries(p.e||{}).filter(([k,v])=>v&&['absence','trust','sustain','care','workload','productivity','preventive'].includes(k)).slice(0,5);
+  $('modalChoices').innerHTML=`${pointDelta?`<div class="consequence-points ${pointDelta>0?'positive':'negative'}">${pointDelta>0?'+':''}${pts(pointDelta)} punten</div>`:''}<div class="consequence-impact">${effects.map(([k,v])=>`<span class="effect-tag ${effectTone(k,v)}">${effectLabel(k,v)}</span>`).join('')}</div><button class="next-btn" id="closeConsequenceBtn">Verder →</button>`;$('modalBackdrop').classList.add('show');$('closeConsequenceBtn').onclick=()=>$('modalBackdrop').classList.remove('show')
+}
+function applyDueEffects(){
+  const due=state.pending.filter(p=>(p.dueDay??99)<=campaignDay());if(!due.length)return;state.pending=state.pending.filter(p=>(p.dueDay??99)>campaignDay());due.forEach(p=>{applyEffects(p.e||{});state.inbox.push({title:p.title,text:p.text});addHistory('Gevolg',p.title,p.text,(p.e||{}).points||0,p.dueDay||campaignDay(),p.e||{})});updateSidebar();showConsequencePopup(due[0])
+}
+function nextStep(){
+  const s=scenarios[state.scenario];if(state.step<s.steps.length-1){state.step++;renderStep();return}
+  const completed=state.scenario+1;const event=inboxEvents.find(e=>e.afterScenario===completed&&!state.shownEvents.includes(completed));if(event){showInboxEvent(event,()=>advanceScenario());}else advanceScenario();
+}
+function advanceScenario(){if(state.scenario>=DEMO_SCENARIOS-1){finishDemo();return}if(state.scenario<scenarios.length-1){state.scenario++;state.step=0;renderStep();applyDueEffects();window.scrollTo({top:0,behavior:'smooth'})}else{applyAllPending();finish()}}
+function showScoreInfo(){$('modalKicker').textContent='Managementscore';$('modalTitle').textContent='Hoe worden je punten opgebouwd?';$('modalText').textContent='Iedere beslissing bestaat uit drie delen. Latere gevolgen kunnen daarna opnieuw punten toevoegen of aftrekken.';$('modalChoices').innerHTML=`<div class="score-info-copy"><div class="score-info-row"><strong>Afweging</strong><span>Hoe evenwichtig is je gekozen route tussen mens, team, zorgvuldigheid, preventie en organisatieresultaat?</span></div><div class="score-info-row"><strong>Direct effect</strong><span>Wat verandert er nu in vertrouwen, inzetbaarheid, werkdruk, productiviteit en verzuim?</span></div><div class="score-info-row"><strong>Tijdigheid</strong><span>Hoeveel handelingsruimte had je nog? Meer informatie kan helpen, maar de kalender loopt door.</span></div><div class="score-info-row"><strong>Latere gevolgen</strong><span>Een keuze kan dagen later alsnog positief of negatief doorwerken. Die punten zie je pas wanneer het gevolg optreedt.</span></div></div><button class="next-btn" id="closeScoreInfoBtn">Begrepen</button>`;$('modalBackdrop').classList.add('show');$('closeScoreInfoBtn').onclick=()=>$('modalBackdrop').classList.remove('show')}
+function showInboxEvent(event,done){state.shownEvents.push(event.afterScenario);$('modalKicker').textContent='Campagne-event · onverwachte gebeurtenis';$('modalTitle').textContent=event.title;$('modalText').textContent=event.text;$('modalChoices').innerHTML='';event.choices.forEach((c,i)=>{const b=document.createElement('button');b.className='choice';b.innerHTML=`<span class="choice-letter">${String.fromCharCode(65+i)}</span><span class="choice-text">${c.label}</span><span class="choice-cost"></span>`;b.onclick=()=>{const before=state.points;applyEffects(c.e||{});state.points+=c.points||0;state.inbox.push({title:event.title,text:c.label});addHistory('Event',event.title,c.label,state.points-before,campaignDay(),c.e||{});$('modalBackdrop').classList.remove('show');updateSidebar();done()};$('modalChoices').appendChild(b)});$('modalBackdrop').classList.add('show')}
+function applyAllPending(){if(!state.pending.length)return;state.pending.forEach(p=>{applyEffects(p.e||{});state.inbox.push({title:p.title,text:p.text});addHistory('Gevolg',p.title,p.text,(p.e||{}).points||0,p.dueDay||campaignDay(),p.e||{})});state.pending=[]}
+function level(v){if(v>=78)return 'Sterk';if(v>=62)return 'Goed';if(v>=48)return 'In balans';return 'Kwetsbaar'}
+function finishDemo(){
+  state.campaignTime=DEMO_END_DAY-1;
+  progress();
+  updateSidebar();
+  const all=[...peers.map(p=>({name:p.name,score:peerScore(p),you:false})),{name:'Jij',score:state.points,you:true}].sort((a,b)=>b.score-a.score);
+  const rank=all.findIndex(x=>x.you)+1;
+  $('finalPoints').textContent=pts(state.points);
+  $('finalAbsence').textContent=`${fmt(state.absence)}%`;
+  $('finalRank').textContent=`#${rank} van ${all.length}`;
+  const quality=(state.preventive+state.trust+state.sustain+state.care)/4;
+  let verdict;
+  if(quality>=75)verdict='Je eerste keuzes combineren mensgericht leiderschap met duidelijke sturing. Dit is een tussenstand: de rest van de maand kan het beeld nog veranderen.';
+  else if(state.trust<58)verdict='Je stuurt stevig op resultaat, maar vertrouwen staat in de eerste twaalf dagen al onder druk. Latere gebeurtenissen kunnen dit versterken of herstellen.';
+  else if(state.workload>78)verdict='Je pakt individuele vraagstukken op, maar de druk op het team blijft hoog. In de rest van de campagne wordt dat een belangrijk risico.';
+  else verdict='Je aanpak is voorlopig redelijk in balans. De echte test zit in de stapeling van gebeurtenissen later in de maand.';
+  $('verdictText').textContent=verdict;
+  const human=clamp((state.trust+state.sustain)/2),result=clamp(state.resultFocus);const ms=[['metricPreventive','metricPreventiveLabel',state.preventive],['metricCare','metricCareLabel',state.care],['metricHuman','metricHumanLabel',human],['metricResult','metricResultLabel',result]];
+  ms.forEach(([bar,label,v])=>{$(label).textContent=level(v);setTimeout(()=>$(bar).style.width=`${v}%`,150)});
+  $('insights').innerHTML=state.answers.map((a,i)=>`<div class="insight"><div class="insight-icon">${i+1}</div><div><strong>${a.scenario}</strong><p>${a.insight}</p></div></div>`).join('');
+  showScreen('finalScreen');
+}
+
+function finish(){
+  state.campaignTime=29;progress();updateSidebar();const all=[...peers.map(p=>({name:p.name,score:peerScore(p),you:false})),{name:'Jij',score:state.points,you:true}].sort((a,b)=>b.score-a.score);const rank=all.findIndex(x=>x.you)+1;$('finalPoints').textContent=pts(state.points);$('finalAbsence').textContent=`${fmt(state.absence)}%`;$('finalRank').textContent=`#${rank} van ${all.length}`;
+  const quality=(state.preventive+state.trust+state.sustain+state.care)/4;let verdict;if(state.absence<5&&quality>=75)verdict='Je combineert resultaat met stevig preventief, mensgericht en zorgvuldig leiderschap.';else if(state.absence<5&&quality<60)verdict='Je krijgt het cijfer omlaag, maar een deel van de winst is kwetsbaar of kost vertrouwen.';else if(quality>=75)verdict='Je bouwt duurzaam, ook wanneer het verzuimcijfer niet onmiddellijk meebeweegt.';else if(state.workload>75)verdict='Je reageert op individuele situaties, maar laat systeemdruk te vaak intact.';else verdict='Je ziet veel signalen goed, maar timing, prioritering en zorgvuldigheid zijn nog wisselend.';$('verdictText').textContent=verdict;
+  const human=clamp((state.trust+state.sustain)/2),result=clamp(state.resultFocus);const ms=[['metricPreventive','metricPreventiveLabel',state.preventive],['metricCare','metricCareLabel',state.care],['metricHuman','metricHumanLabel',human],['metricResult','metricResultLabel',result]];ms.forEach(([bar,label,v])=>{$(label).textContent=level(v);setTimeout(()=>$(bar).style.width=`${v}%`,150)});
+  $('insights').innerHTML=state.answers.map((a,i)=>`<div class="insight"><div class="insight-icon">${i+1}</div><div><strong>${a.scenario}</strong><p>${a.insight}</p></div></div>`).join('');showScreen('finalScreen')
+}
+function reset(){state=structuredClone(initialState);$('modalBackdrop').classList.remove('show');addHistory('Start','Campagne gestart','Je neemt gedurende één maand de leiding over een team van 25 medewerkers.',0,1);updateSidebar();showScreen('gameScreen');renderStep()}
+$('startBtn').onclick=reset;$('nextBtn').onclick=nextStep;$('restartBtn').onclick=()=>{state=structuredClone(initialState);showScreen('startScreen')};$('scoreInfoBtn').onclick=showScoreInfo;$('fullscreenBtn').onclick=async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+updateSidebar();
+</script>
+</body>
+</html>
